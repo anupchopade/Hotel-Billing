@@ -1,6 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { MenuItem } from '../types';
 import { api } from '../lib/api';
+
+// Global cache and request deduplication
+let menuItemsCache: MenuItem[] | null = null;
+let menuItemsPromise: Promise<MenuItem[]> | null = null;
+let lastFetchTime = 0;
+const CACHE_DURATION = 30000; // 30 seconds cache
 
 interface AddMenuItemData {
   name: string;
@@ -13,37 +19,60 @@ interface AddMenuItemData {
 export function useMenuItems() {
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [hasFetched, setHasFetched] = useState(false);
+  const hasInitialized = useRef(false);
 
-  const fetchMenuItems = async () => {
-    if (hasFetched) return; // Prevent duplicate calls
+  const fetchMenuItems = async (forceRefresh = false) => {
+    const now = Date.now();
     
+    // Return cached data if available and not expired
+    if (!forceRefresh && menuItemsCache && (now - lastFetchTime) < CACHE_DURATION) {
+      setMenuItems(menuItemsCache);
+      setIsLoading(false);
+      return;
+    }
+
+    // If there's already a request in progress, wait for it
+    if (menuItemsPromise) {
+      try {
+        const cachedMenuItems = await menuItemsPromise;
+        setMenuItems(cachedMenuItems);
+        setIsLoading(false);
+        return;
+      } catch (error) {
+        // If the ongoing request fails, we'll make a new one
+        menuItemsPromise = null;
+      }
+    }
+
+    // Make new request
     try {
       setIsLoading(true);
-      const res = await api.get('/menu');
-      setMenuItems(res.data);
-      setHasFetched(true);
+      menuItemsPromise = api.get('/menu').then(res => {
+        menuItemsCache = res.data;
+        lastFetchTime = now;
+        menuItemsPromise = null;
+        return res.data;
+      });
+      
+      const fetchedMenuItems = await menuItemsPromise;
+      setMenuItems(fetchedMenuItems);
     } catch (error) {
       console.error('Failed to fetch menu items:', error);
+      menuItemsPromise = null;
     } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchMenuItems();
-  }, [hasFetched]);
+    if (!hasInitialized.current) {
+      hasInitialized.current = true;
+      fetchMenuItems();
+    }
+  }, []);
 
   const refreshMenuItems = async () => {
-    try {
-      setIsLoading(true);
-      const res = await api.get('/menu');
-      setMenuItems(res.data);
-    } catch (error) {
-      console.error('Failed to refresh menu items:', error);
-    } finally {
-      setIsLoading(false);
-    }
+    await fetchMenuItems(true); // Force refresh
   };
 
   const addMenuItem = async (data: AddMenuItemData): Promise<{ success: boolean; error?: string }> => {

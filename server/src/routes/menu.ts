@@ -22,7 +22,17 @@ router.post('/', requireAuth, requireAdmin, async (req, res) => {
   const parsed = upsertSchema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: 'Invalid payload' });
   const data = parsed.data;
-  const created = await prisma.menuItem.create({ data });
+  
+  // Ensure all required fields are present for creation
+  const createData = {
+    name: data.name,
+    category: data.category,
+    fullPrice: data.fullPrice,
+    halfPrice: data.halfPrice,
+    isAvailable: data.isAvailable ?? true
+  };
+  
+  const created = await prisma.menuItem.create({ data: createData });
   res.status(201).json(created);
 });
 

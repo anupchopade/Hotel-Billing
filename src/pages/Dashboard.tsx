@@ -60,15 +60,15 @@ export default function Dashboard() {
   ];
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-3 sm:space-y-4 lg:space-y-6">
       {/* Welcome Section */}
-      <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg">
+      <div className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl p-4 sm:p-5 lg:p-6 shadow-sm border border-gray-200 dark:border-gray-700">
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+          <div className="flex-1 min-w-0">
+            <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 dark:text-white">
               Welcome back, {user?.name}!
             </h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-1">
+            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">
               {new Date().toLocaleDateString('en-IN', { 
                 weekday: 'long', 
                 year: 'numeric', 
@@ -77,49 +77,49 @@ export default function Dashboard() {
               })}
             </p>
           </div>
-          <div className="p-3 bg-blue-100 dark:bg-blue-900/20 rounded-full">
-            <ChefHat className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+          <div className="p-2 sm:p-3 bg-blue-100 dark:bg-blue-900/20 rounded-full flex-shrink-0 ml-3">
+            <ChefHat className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600 dark:text-blue-400" />
           </div>
         </div>
       </div>
 
       {/* General Stats - Always Visible */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl p-4 sm:p-5 shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="flex items-center">
-            <div className="p-3 bg-purple-100 dark:bg-purple-900/20 rounded-full">
-              <FileText className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+            <div className="p-2 sm:p-3 bg-purple-100 dark:bg-purple-900/20 rounded-full">
+              <FileText className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600 dark:text-purple-400" />
             </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Today's Bills</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{todaysBills.length}</p>
+            <div className="ml-3 sm:ml-4">
+              <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400">Today's Bills</p>
+              <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">{todaysBills.length}</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg">
+        <div className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl p-4 sm:p-5 shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="flex items-center">
-            <div className="p-3 bg-orange-100 dark:bg-orange-900/20 rounded-full">
-              <ChefHat className="h-6 w-6 text-orange-600 dark:text-orange-400" />
+            <div className="p-2 sm:p-3 bg-orange-100 dark:bg-orange-900/20 rounded-full">
+              <ChefHat className="h-5 w-5 sm:h-6 sm:w-6 text-orange-600 dark:text-orange-400" />
             </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Menu Items</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{menuItems.length}</p>
+            <div className="ml-3 sm:ml-4">
+              <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400">Menu Items</p>
+              <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">{menuItems.length}</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Financial Details Section */}
-      <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center">
-            <IndianRupee className="h-5 w-5 mr-2" />
+      <div className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl p-4 sm:p-5 lg:p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 sm:mb-4 gap-3 sm:gap-0">
+          <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white flex items-center">
+            <IndianRupee className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
             Financial Overview
           </h2>
           <button
             onClick={() => setShowFinancials(!showFinancials)}
-            className="flex items-center px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-lg transition-colors"
+            className="flex items-center justify-center px-3 sm:px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-lg transition-colors text-sm sm:text-base"
           >
             {showFinancials ? (
               <>
@@ -136,62 +136,62 @@ export default function Dashboard() {
         </div>
 
         {showFinancials ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-6 border border-blue-200 dark:border-blue-800">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+            <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg sm:rounded-xl p-4 sm:p-5 border border-blue-200 dark:border-blue-800">
               <div className="flex items-center">
-                <div className="p-3 bg-blue-100 dark:bg-blue-900/40 rounded-full">
-                  <IndianRupee className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                <div className="p-2 sm:p-3 bg-blue-100 dark:bg-blue-900/40 rounded-full">
+                  <IndianRupee className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600 dark:text-blue-400" />
                 </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-blue-700 dark:text-blue-300">Today's Revenue</p>
-                  <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">₹{todaysRevenue.toLocaleString()}</p>
+                <div className="ml-3 sm:ml-4">
+                  <p className="text-xs sm:text-sm font-medium text-blue-700 dark:text-blue-300">Today's Revenue</p>
+                  <p className="text-lg sm:text-xl lg:text-2xl font-bold text-blue-900 dark:text-blue-100">₹{todaysRevenue.toLocaleString()}</p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-green-50 dark:bg-green-900/20 rounded-xl p-6 border border-green-200 dark:border-green-800">
+            <div className="bg-green-50 dark:bg-green-900/20 rounded-lg sm:rounded-xl p-4 sm:p-5 border border-green-200 dark:border-green-800">
               <div className="flex items-center">
-                <div className="p-3 bg-green-100 dark:bg-green-900/40 rounded-full">
-                  <TrendingUp className="h-6 w-6 text-green-600 dark:text-green-400" />
+                <div className="p-2 sm:p-3 bg-green-100 dark:bg-green-900/40 rounded-full">
+                  <TrendingUp className="h-5 w-5 sm:h-6 sm:w-6 text-green-600 dark:text-green-400" />
                 </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-green-700 dark:text-green-300">Monthly Revenue</p>
-                  <p className="text-2xl font-bold text-green-900 dark:text-green-100">₹{monthlyRevenue.toLocaleString()}</p>
+                <div className="ml-3 sm:ml-4">
+                  <p className="text-xs sm:text-sm font-medium text-green-700 dark:text-green-300">Monthly Revenue</p>
+                  <p className="text-lg sm:text-xl lg:text-2xl font-bold text-green-900 dark:text-green-100">₹{monthlyRevenue.toLocaleString()}</p>
                 </div>
               </div>
             </div>
           </div>
         ) : (
-          <div className="text-center py-8">
-            <div className="p-4 bg-gray-100 dark:bg-gray-700 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-              <EyeOff className="h-8 w-8 text-gray-400" />
+          <div className="text-center py-4 sm:py-6">
+            <div className="p-3 sm:p-4 bg-gray-100 dark:bg-gray-700 rounded-full w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 flex items-center justify-center">
+              <EyeOff className="h-6 w-6 sm:h-8 sm:w-8 text-gray-400" />
             </div>
-            <p className="text-gray-500 dark:text-gray-400">Financial details are hidden for privacy</p>
-            <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">Click "Show" to view revenue information</p>
+            <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400">Financial details are hidden for privacy</p>
+            <p className="text-xs sm:text-sm text-gray-400 dark:text-gray-500 mt-1">Click "Show" to view revenue information</p>
           </div>
         )}
       </div>
 
       {/* Quick Actions */}
-      <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg">
-        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center">
-          <Clock className="h-5 w-5 mr-2" />
+      <div className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl p-4 sm:p-5 lg:p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+        <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white mb-3 sm:mb-4 flex items-center">
+          <Clock className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
           Quick Actions
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
           {quickActions.map((action) => {
             const Icon = action.icon;
             return (
               <Link
                 key={action.name}
                 to={action.href}
-                className={`${action.color} text-white p-6 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-lg group`}
+                className={`${action.color} text-white p-4 sm:p-5 rounded-lg sm:rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-lg group`}
               >
-                <div className="flex items-center mb-3">
-                  <Icon className="h-6 w-6 mr-3" />
-                  <h3 className="font-semibold">{action.name}</h3>
+                <div className="flex items-center mb-2 sm:mb-3">
+                  <Icon className="h-5 w-5 sm:h-6 sm:w-6 mr-2 sm:mr-3" />
+                  <h3 className="font-semibold text-sm sm:text-base">{action.name}</h3>
                 </div>
-                <p className="text-sm opacity-90">{action.description}</p>
+                <p className="text-xs sm:text-sm opacity-90">{action.description}</p>
               </Link>
             );
           })}
@@ -199,12 +199,12 @@ export default function Dashboard() {
       </div>
 
       {/* Recent Bills */}
-      <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white">Recent Bills</h2>
+      <div className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl p-4 sm:p-5 lg:p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 sm:mb-4 gap-2 sm:gap-0">
+          <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white">Recent Bills</h2>
           <Link
             to="/history"
-            className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium text-sm"
+            className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium text-sm self-start sm:self-auto"
           >
             View All
           </Link>

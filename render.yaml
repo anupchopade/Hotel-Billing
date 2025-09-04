@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: hotel-billing-backend
+    env: node
+    plan: free
+    buildCommand: npm install && npx prisma generate && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: hotel-billing-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CORS_ORIGIN
+        value: https://your-frontend-url.vercel.app,http://localhost:5173
+
+databases:
+  - name: hotel-billing-db
+    plan: free
+    databaseName: hotel_billing
+    user: hotel_user

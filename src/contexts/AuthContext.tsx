@@ -1,5 +1,11 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { api } from '../lib/api';
+
+// Global cache for users data
+let usersCache: User[] | null = null;
+let usersPromise: Promise<User[]> | null = null;
+let lastUsersFetchTime = 0;
+const USERS_CACHE_DURATION = 30000; // 30 seconds cache
 
 interface User {
 	id: string;
@@ -11,12 +17,15 @@ interface User {
 interface AuthContextType {
 	user: User | null;
 	users: User[];
+	deletedUsers: User[];
 	login: (email: string, password: string) => Promise<boolean>;
 	logout: () => void;
 	addUser: (params: { name: string; email: string; role: 'admin' | 'cashier'; password: string }) => Promise<{ success: boolean; error?: string }>;
 	updateUser: (id: string, changes: Partial<Omit<User, 'id'>>) => Promise<{ success: boolean; error?: string }>;
 	deleteUser: (id: string) => Promise<{ success: boolean; error?: string }>;
 	changePassword: (id: string, newPassword: string) => Promise<{ success: boolean; error?: string }>;
+	reactivateUser: (id: string) => Promise<{ success: boolean; error?: string }>;
+	fetchDeletedUsers: () => Promise<void>;
 	isLoading: boolean;
 	fetchUsers: () => Promise<void>;
 }
@@ -26,18 +35,57 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
 	const [user, setUser] = useState<User | null>(null);
 	const [users, setUsers] = useState<User[]>([]);
+	const [deletedUsers, setDeletedUsers] = useState<User[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
 
 	// Fetch users from backend (only for admins)
-	const fetchUsers = async () => {
+	const fetchUsers = useCallback(async (forceRefresh = false) => {
+		const now = Date.now();
+		
+		// Return cached data if available and not expired
+		if (!forceRefresh && usersCache && (now - lastUsersFetchTime) < USERS_CACHE_DURATION) {
+			setUsers(usersCache);
+			return;
+		}
+
+		// If there's already a request in progress, wait for it
+		if (usersPromise) {
+			try {
+				const cachedUsers = await usersPromise;
+				setUsers(cachedUsers);
+				return;
+			} catch (error) {
+				// If the ongoing request fails, we'll make a new one
+				usersPromise = null;
+			}
+		}
+
+		// Make new request
 		try {
-			const res = await api.get('/users');
-			setUsers(res.data);
+			usersPromise = api.get('/users').then(res => {
+				usersCache = res.data;
+				lastUsersFetchTime = now;
+				usersPromise = null;
+				return res.data;
+			});
+			
+			const fetchedUsers = await usersPromise;
+			setUsers(fetchedUsers);
 		} catch (error) {
 			console.error('Failed to fetch users:', error);
 			// Don't throw error - cashiers don't have access to users endpoint
+			usersPromise = null;
 		}
-	};
+	}, []);
+
+	const fetchDeletedUsers = useCallback(async () => {
+		try {
+			const res = await api.get('/users/deleted');
+			setDeletedUsers(res.data);
+		} catch (error) {
+			console.error('Failed to fetch deleted users:', error);
+		}
+	}, []);
 
 	useEffect(() => {
 		const initializeAuth = async () => {
@@ -109,7 +157,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 	const addUser = async ({ name, email, role, password }: { name: string; email: string; role: 'admin' | 'cashier'; password: string }): Promise<{ success: boolean; error?: string }> => {
 		try {
 			await api.post('/users', { name, email, role, password });
-			await fetchUsers(); // Refresh the users list
+			await fetchUsers(true); // Refresh the users list
 			return { success: true };
 		} catch (error: any) {
 			const errorMessage = error.response?.data?.error || 'Failed to add user';
@@ -120,7 +168,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 	const updateUser = async (id: string, changes: Partial<Omit<User, 'id'>>): Promise<{ success: boolean; error?: string }> => {
 		try {
 			await api.patch(`/users/${id}`, changes);
-			await fetchUsers(); // Refresh the users list
+			await fetchUsers(true); // Refresh the users list
 			return { success: true };
 		} catch (error: any) {
 			const errorMessage = error.response?.data?.error || 'Failed to update user';
@@ -131,7 +179,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 	const deleteUser = async (id: string): Promise<{ success: boolean; error?: string }> => {
 		try {
 			await api.delete(`/users/${id}`);
-			await fetchUsers(); // Refresh the users list
+			await fetchUsers(true); // Refresh the users list
 			
 			// If deleting current user, logout
 			if (user?.id === id) {
@@ -155,8 +203,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 		}
 	};
 
+	const reactivateUser = async (id: string): Promise<{ success: boolean; error?: string }> => {
+		try {
+			await api.patch(`/users/${id}/reactivate`);
+			await fetchUsers(true); // Refresh the users list
+			await fetchDeletedUsers(); // Refresh the deleted users list
+			return { success: true };
+		} catch (error: any) {
+			const errorMessage = error.response?.data?.error || 'Failed to reactivate user';
+			return { success: false, error: errorMessage };
+		}
+	};
+
 	return (
-		<AuthContext.Provider value={{ user, users, login, logout, addUser, updateUser, deleteUser, changePassword, isLoading, fetchUsers }}>
+		<AuthContext.Provider value={{ user, users, deletedUsers, login, logout, addUser, updateUser, deleteUser, changePassword, reactivateUser, fetchDeletedUsers, isLoading, fetchUsers }}>
 			{children}
 		</AuthContext.Provider>
 	);

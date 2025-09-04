@@ -25,10 +25,10 @@ export default function MenuManagement() {
 
   if (!isAdmin && !isCashier) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg text-center">
-        <Shield className="h-16 w-16 mx-auto mb-4 text-red-500" />
-        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Access Denied</h2>
-        <p className="text-gray-600 dark:text-gray-400">Access restricted to hotel staff only.</p>
+      <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl p-6 sm:p-8 shadow-lg text-center">
+        <Shield className="h-12 w-12 sm:h-16 sm:w-16 mx-auto mb-3 sm:mb-4 text-red-500" />
+        <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white mb-2">Access Denied</h2>
+        <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">Access restricted to hotel staff only.</p>
       </div>
     );
   }
@@ -96,17 +96,17 @@ export default function MenuManagement() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center">
-            <Menu className="h-6 w-6 mr-3" />
+    <div className="space-y-3 sm:space-y-4">
+      <div className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl p-4 sm:p-5 lg:p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 sm:mb-4 gap-3 sm:gap-0">
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white flex items-center">
+            <Menu className="h-5 w-5 sm:h-6 sm:w-6 mr-2 sm:mr-3" />
             {isCashier ? 'Menu Items' : 'Menu Management'}
           </h1>
           {isAdmin && (
             <button
               onClick={() => setIsAddingItem(true)}
-              className="flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-all"
+              className="flex items-center justify-center px-3 sm:px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-all text-sm sm:text-base"
             >
               <Plus className="h-4 w-4 mr-2" />
               Add Item
@@ -116,20 +116,20 @@ export default function MenuManagement() {
 
         {/* Add/Edit Form - Admin Only */}
         {isAdmin && isAddingItem && (
-          <div className="mb-6 p-6 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-700">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+          <div className="mb-4 sm:mb-6 p-4 sm:p-6 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-700">
+            <div className="flex items-center justify-between mb-3 sm:mb-4">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
                 {editingItem ? 'Edit Menu Item' : 'Add New Menu Item'}
               </h3>
               <button
                 onClick={resetForm}
-                className="p-2 rounded-lg bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors"
+                className="p-1.5 sm:p-2 rounded-lg bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors"
               >
-                <X className="h-4 w-4" />
+                <X className="h-3 w-3 sm:h-4 sm:w-4" />
               </button>
             </div>
             
-            <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Item Name *
@@ -138,7 +138,7 @@ export default function MenuManagement() {
                   type="text"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-600 dark:text-white"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-600 dark:text-white text-sm sm:text-base"
                   placeholder="e.g. Chicken Biryani"
                 />
               </div>
@@ -151,7 +151,7 @@ export default function MenuManagement() {
                   type="text"
                   value={formData.category}
                   onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-600 dark:text-white"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-600 dark:text-white text-sm sm:text-base"
                   placeholder="e.g. biryani, starters"
                 />
               </div>
@@ -164,7 +164,7 @@ export default function MenuManagement() {
                   type="number"
                   value={formData.fullPrice}
                   onChange={(e) => setFormData({ ...formData, fullPrice: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-600 dark:text-white"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-600 dark:text-white text-sm sm:text-base"
                   placeholder="0"
                   min="0"
                   step="0.01"
@@ -179,7 +179,7 @@ export default function MenuManagement() {
                   type="number"
                   value={formData.halfPrice}
                   onChange={(e) => setFormData({ ...formData, halfPrice: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-600 dark:text-white"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-600 dark:text-white text-sm sm:text-base"
                   placeholder="0"
                   min="0"
                   step="0.01"
@@ -237,15 +237,15 @@ export default function MenuManagement() {
       </div>
 
       {/* Menu Items */}
-      <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg">
+      <div className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl p-4 sm:p-5 lg:p-6 shadow-sm border border-gray-200 dark:border-gray-700">
         {filteredItems.length === 0 ? (
-          <div className="text-center py-12 text-gray-500 dark:text-gray-400">
-            <Menu className="h-16 w-16 mx-auto mb-4 opacity-50" />
-            <p className="text-lg">No menu items found</p>
-            <p className="text-sm">Add some items to get started</p>
+          <div className="text-center py-8 sm:py-12 text-gray-500 dark:text-gray-400">
+            <Menu className="h-12 w-12 sm:h-16 sm:w-16 mx-auto mb-3 sm:mb-4 opacity-50" />
+            <p className="text-base sm:text-lg">No menu items found</p>
+            <p className="text-xs sm:text-sm">Add some items to get started</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
             {filteredItems.map((item) => (
               <div
                 key={item.id}
@@ -256,20 +256,20 @@ export default function MenuManagement() {
                 }`}
               >
                 <div className="flex items-start justify-between mb-3">
-                  <div>
-                    <h3 className={`font-medium ${item.isAvailable ? 'text-gray-900 dark:text-white' : 'text-red-600 dark:text-red-400'}`}>
+                  <div className="flex-1 min-w-0">
+                    <h3 className={`font-medium truncate ${item.isAvailable ? 'text-gray-900 dark:text-white' : 'text-red-600 dark:text-red-400'}`}>
                       {item.name}
                     </h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 capitalize">{item.category}</p>
+                    <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 capitalize truncate">{item.category}</p>
                   </div>
                   
                   {isAdmin && (
-                    <div className="flex space-x-1">
+                    <div className="flex space-x-1 flex-shrink-0 ml-2">
                       <button
                         onClick={() => startEdit(item)}
                         className="p-1 rounded bg-blue-100 dark:bg-blue-900/20 hover:bg-blue-200 dark:hover:bg-blue-900/30 text-blue-600 dark:text-blue-400 transition-colors"
                       >
-                        <Edit className="h-4 w-4" />
+                        <Edit className="h-3 w-3 sm:h-4 sm:w-4" />
                       </button>
                       
                       <button
@@ -283,7 +283,7 @@ export default function MenuManagement() {
                         }}
                         className="p-1 rounded bg-red-100 dark:bg-red-900/20 hover:bg-red-200 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 transition-colors"
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
                       </button>
                     </div>
                   )}

@@ -131,9 +131,9 @@ export default function CreateBill() {
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 sm:space-y-4">
       {/* Compact Header for Mobile */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-lg">
+      <div className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl p-4 sm:p-5 shadow-sm border border-gray-200 dark:border-gray-700">
         <h1 className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-white mb-3 flex items-center">
           <FileText className="h-5 w-5 sm:h-6 sm:w-6 mr-2" />
           Create New Bill
@@ -184,7 +184,7 @@ export default function CreateBill() {
 
       {/* Mobile Cart Summary - Sticky at top */}
       {billItems.length > 0 && (
-        <div className="lg:hidden sticky top-2 z-10 bg-white dark:bg-gray-800 rounded-xl p-3 shadow-lg border border-gray-200 dark:border-gray-700">
+        <div className="lg:hidden sticky top-2 z-10 bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl p-3 sm:p-4 shadow-sm border border-gray-200 dark:border-gray-700">
           {/* Cart Header - Always Visible */}
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center">
@@ -264,53 +264,53 @@ export default function CreateBill() {
       )}
 
       {/* Two-column layout: Menu on left, Cart on right */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4">
         <div className="lg:col-span-2">
           <MenuItemSelector onItemSelect={addItem} />
         </div>
 
-                 <div className="space-y-4">
-           <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg">
-             <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
-               <ShoppingCart className="h-5 w-5 mr-2" />
-               Cart ({billItems.length})
-             </h2>
+        <div className="space-y-3 sm:space-y-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl p-4 sm:p-5 lg:p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+            <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-3 sm:mb-4 flex items-center">
+              <ShoppingCart className="h-5 w-5 mr-2" />
+              Cart ({billItems.length})
+            </h2>
 
-             {billItems.length === 0 ? (
-               <div className="text-sm text-gray-600 dark:text-gray-300">No items yet. Add from the left.</div>
-             ) : (
-               <div className="space-y-3 max-h-[300px] overflow-auto pr-1">
-                 {billItems.map((item) => (
-                   <BillItemCard
-                     key={`${item.menuItemId}-${item.type}`}
-                     item={item}
-                     onQuantityChange={updateItemQuantity}
-                   />
-                 ))}
-               </div>
-             )}
-           </div>
+            {billItems.length === 0 ? (
+              <div className="text-sm text-gray-600 dark:text-gray-300">No items yet. Add from the left.</div>
+            ) : (
+              <div className="space-y-2 sm:space-y-3 max-h-[300px] overflow-auto pr-1">
+                {billItems.map((item) => (
+                  <BillItemCard
+                    key={`${item.menuItemId}-${item.type}`}
+                    item={item}
+                    onQuantityChange={updateItemQuantity}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
 
-           {/* Bill Summary */}
-           {billItems.length > 0 && (
-             <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg">
-               <BillSummary
-                 subtotal={subtotal}
-                 gstAmount={gstAmount}
-                 discount={discount}
-                 total={total}
-                 onDiscountChange={setDiscount}
-               />
+          {/* Bill Summary */}
+          {billItems.length > 0 && (
+            <div className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl p-4 sm:p-5 lg:p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+              <BillSummary
+                subtotal={subtotal}
+                gstAmount={gstAmount}
+                discount={discount}
+                total={total}
+                onDiscountChange={setDiscount}
+              />
 
-               <div className="flex flex-col sm:flex-row gap-3 mt-6">
-                 <button
-                   onClick={handleSaveBill}
-                   className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg transition-all duration-300 flex items-center justify-center transform hover:scale-[1.02] active:scale-[0.98]"
-                 >
-                   <Save className="h-5 w-5 mr-2" />
-                   Save Bill
-                 </button>
-                                 <button
+              <div className="flex flex-col sm:flex-row gap-3 mt-4 sm:mt-6">
+                <button
+                  onClick={handleSaveBill}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg transition-all duration-300 flex items-center justify-center transform hover:scale-[1.02] active:scale-[0.98]"
+                >
+                  <Save className="h-5 w-5 mr-2" />
+                  Save Bill
+                </button>
+                <button
                   onClick={async () => {
                     if (!currentBill) {
                       // Save the bill first, then show print
@@ -325,10 +325,10 @@ export default function CreateBill() {
                   <Printer className="h-5 w-5 mr-2" />
                   Print & Save
                 </button>
-               </div>
-             </div>
-           )}
-         </div>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

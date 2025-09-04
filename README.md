@@ -1,9 +1,9 @@
 # 🏨 Hotel Anuprabha - Billing System
 
-A modern, full-stack hotel billing system built with React, Node.js, and PostgreSQL. Designed specifically for Hotel Anuprabha with mobile-first responsive design and thermal printer support.
+A modern, full-stack hotel billing system built with React, Node.js, and PostgreSQL. Designed specifically for Hotel Anuprabha with mobile-first responsive design, thermal printer support, and advanced user management features.
 
 ![Hotel Anuprabha Logo](https://img.shields.io/badge/Hotel-Anuprabha-blue?style=for-the-badge)
-![Version](https://img.shields.io/badge/Version-1.0.0-green?style=for-the-badge)
+![Version](https://img.shields.io/badge/Version-2.0.0-green?style=for-the-badge)
 ![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)
 
 ## 🌟 Features
@@ -11,24 +11,29 @@ A modern, full-stack hotel billing system built with React, Node.js, and Postgre
 ### 🔐 Authentication & Security
 - **JWT-based Authentication** with access/refresh token rotation
 - **Role-based Access Control** (Admin & Cashier roles)
-- **Rate Limiting** (5 login attempts per 15 minutes)
+- **Rate Limiting** (1200 requests per 15 minutes, 5 login attempts)
 - **Password Visibility Toggle** for admin user management
 - **Secure Logout** with token invalidation
+- **Soft Delete System** for user management with reactivation
+- **Request Caching & Deduplication** to prevent API abuse
 
 ### 📱 Mobile-First Design
-- **Responsive Layout** optimized for mobile devices
+- **Fully Responsive Layout** optimized for all screen sizes (xs, sm, md, lg, xl)
 - **Sticky Cart Summary** for easy access on mobile
-- **Touch-Friendly Interface** with large buttons
-- **Minimal Scrolling** required on mobile
+- **Touch-Friendly Interface** with large buttons and proper spacing
+- **No Horizontal Scrolling** on any device
 - **Progressive Web App** ready
+- **Custom Breakpoints** for optimal mobile experience
 
 ### 🧾 Billing Features
 - **Quick Bill Creation** with item selection
 - **Real-time Calculations** (GST, discounts, totals)
 - **Default Values** (Customer: "Shree", Table: "1")
 - **Print Preview** with thermal printer optimization
-- **Bill History** with search and filtering
-- **CSV Export** with custom date ranges
+- **Bill History** with advanced search and filtering
+- **CSV Export** with custom date ranges and last 15 days option
+- **Bill Details View** with complete item breakdown
+- **Cashier Name Display** on bills and history
 
 ### 🍽️ Menu Management
 - **CRUD Operations** for menu items
@@ -38,16 +43,21 @@ A modern, full-stack hotel billing system built with React, Node.js, and Postgre
 - **Role-based Permissions** (Cashiers can view, Admins can edit)
 
 ### 👥 User Management (Admin Only)
-- **User CRUD Operations**
+- **User CRUD Operations** with soft delete system
 - **Password Management** with visibility toggle
 - **Role Assignment** (Admin/Cashier)
 - **User Activity Tracking**
+- **Soft Delete & Reactivation** - Users can be deactivated and reactivated
+- **Deleted Users Management** - View and manage deactivated users
+- **Bill History Preservation** - Bills retain original creator information
 
 ### 📊 Dashboard & Analytics
 - **Today's Statistics** (Bills, Revenue)
 - **Monthly Overview**
 - **Financial Privacy** (Eye icon to show/hide amounts)
 - **Quick Actions** for common tasks
+- **Responsive Design** optimized for all screen sizes
+- **Performance Optimized** with API caching
 
 ## 🏗️ Technology Stack
 
@@ -177,9 +187,10 @@ npm run dev
 ## 🔒 Security Features
 
 ### Rate Limiting
-- **General API**: 300 requests per 15 minutes
+- **General API**: 1200 requests per 15 minutes (increased for development)
 - **Auth Endpoints**: 5 attempts per 15 minutes
 - **IP-based** protection
+- **Request Throttling**: 100ms minimum interval between requests
 
 ### Data Protection
 - **Encrypted Passwords** with bcrypt
@@ -287,6 +298,29 @@ VITE_APP_NAME="Hotel Anuprabha"
 VITE_DEFAULT_TAX_RATE="0.18"
 ```
 
+## 🆕 What's New in Version 2.0
+
+### 🔧 Major Improvements
+- **Soft Delete System**: Users can now be deactivated and reactivated without losing bill history
+- **Enhanced Mobile Responsiveness**: All pages now work perfectly on mobile devices
+- **Request Optimization**: API caching and deduplication prevent rate limiting issues
+- **Improved Export System**: Fixed custom date range exports and added "Last 15 Days" option
+- **Better User Management**: Enhanced UI with proper mobile layouts and touch-friendly controls
+
+### 🐛 Bug Fixes
+- Fixed 429 "Too Many Requests" errors with intelligent caching
+- Resolved mobile layout issues across all pages
+- Fixed custom date range export functionality
+- Improved bill history display and filtering
+- Enhanced user deletion flow with proper data preservation
+
+### 📱 Mobile Enhancements
+- Complete responsive redesign for all screen sizes
+- Touch-friendly interface with proper spacing
+- No horizontal scrolling on any device
+- Optimized navigation and button layouts
+- Better form inputs and modal designs
+
 ## 🚀 Deployment
 
 ### Backend (Render)
@@ -310,19 +344,23 @@ VITE_DEFAULT_TAX_RATE="0.18"
 
 ## 📈 Performance Optimizations
 
-- **API Caching** prevents duplicate requests
-- **Rate Limiting** prevents abuse
+- **API Caching** with 30-second TTL prevents duplicate requests
+- **Request Deduplication** prevents multiple identical API calls
+- **Rate Limiting** prevents abuse (1200 requests per 15 minutes)
+- **Request Throttling** (100ms minimum interval)
 - **Lazy Loading** for better performance
 - **Optimized Images** and assets
 - **Minimal Bundle Size** with tree shaking
+- **Global State Management** with React Context
+- **Memoized Functions** with useCallback
 
 ## 🐛 Troubleshooting
 
 ### Common Issues
 
 #### "429 Too Many Requests"
-- **Cause**: Rate limiting triggered
-- **Solution**: Wait 15 minutes or contact admin
+- **Cause**: Rate limiting triggered (1200 requests per 15 minutes)
+- **Solution**: Wait 15 minutes or contact admin. System now has request caching to prevent this.
 
 #### "User gets logged out on refresh"
 - **Cause**: Token storage issue
@@ -335,6 +373,14 @@ VITE_DEFAULT_TAX_RATE="0.18"
 #### "Mobile cart not showing"
 - **Cause**: Screen size detection
 - **Solution**: Refresh page, check responsive breakpoints
+
+#### "User deletion issues"
+- **Cause**: Foreign key constraints
+- **Solution**: System now uses soft delete - users are deactivated, not deleted
+
+#### "Export showing all bills instead of date range"
+- **Cause**: Date filtering issue
+- **Solution**: Fixed in v2.0 - custom date ranges now work correctly
 
 ## 🤝 Contributing
 
@@ -371,4 +417,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Made with ❤️ for Hotel Anuprabha**
 
-*Last Updated: January 2025*
+*Last Updated: January 2025 - Version 2.0*

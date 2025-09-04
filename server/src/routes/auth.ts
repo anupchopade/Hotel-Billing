@@ -21,6 +21,9 @@ router.post('/login', async (req, res) => {
   const user = await prisma.user.findUnique({ where: { email: email.toLowerCase() } });
   if (!user) return res.status(401).json({ error: 'Invalid credentials' });
 
+  // Check if user is deleted
+  if (user.isDeleted) return res.status(401).json({ error: 'Account has been deactivated' });
+
   // Allow both admin and cashier to login
   if (user.role !== 'admin' && user.role !== 'cashier') return res.status(403).json({ error: 'Invalid user role' });
 
@@ -50,7 +53,7 @@ router.post('/refresh', async (req, res) => {
   try {
     const payload = jwt.verify(token, process.env.JWT_SECRET as string) as any;
     const user = await prisma.user.findUnique({ where: { id: payload.id } });
-    if (!user) return res.status(401).json({ error: 'Invalid user' });
+    if (!user || user.isDeleted) return res.status(401).json({ error: 'Invalid user' });
     const accessToken = jwt.sign({ id: user.id, role: user.role, email: user.email }, process.env.JWT_SECRET as string, { expiresIn: '15m' });
     // Rotate refresh token
     const refreshTokenRaw = jwt.sign({ id: user.id }, process.env.JWT_SECRET as string, { expiresIn: '7d' });

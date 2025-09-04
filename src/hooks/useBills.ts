@@ -1,6 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Bill, BillItem, ApiBill, ApiBillItem } from '../types';
 import { api } from '../lib/api';
+
+// Global cache and request deduplication
+let billsCache: Bill[] | null = null;
+let billsPromise: Promise<Bill[]> | null = null;
+let lastFetchTime = 0;
+const CACHE_DURATION = 30000; // 30 seconds cache
 
 interface CreateBillData {
   customerName: string;
@@ -41,27 +47,58 @@ const transformApiBillToFrontend = (apiBill: ApiBill): Bill => {
 export function useBills() {
   const [bills, setBills] = useState<Bill[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [hasFetched, setHasFetched] = useState(false);
+  const hasInitialized = useRef(false);
 
-  const fetchBills = async () => {
-    if (hasFetched) return; // Prevent duplicate calls
+  const fetchBills = async (forceRefresh = false) => {
+    const now = Date.now();
     
+    // Return cached data if available and not expired
+    if (!forceRefresh && billsCache && (now - lastFetchTime) < CACHE_DURATION) {
+      setBills(billsCache);
+      setIsLoading(false);
+      return;
+    }
+
+    // If there's already a request in progress, wait for it
+    if (billsPromise) {
+      try {
+        const cachedBills = await billsPromise;
+        setBills(cachedBills);
+        setIsLoading(false);
+        return;
+      } catch (error) {
+        // If the ongoing request fails, we'll make a new one
+        billsPromise = null;
+      }
+    }
+
+    // Make new request
     try {
       setIsLoading(true);
-      const res = await api.get('/bills');
-      const transformedBills = res.data.map(transformApiBillToFrontend);
+      billsPromise = api.get('/bills').then(res => {
+        const transformedBills = res.data.map(transformApiBillToFrontend);
+        billsCache = transformedBills;
+        lastFetchTime = now;
+        billsPromise = null;
+        return transformedBills;
+      });
+      
+      const transformedBills = await billsPromise;
       setBills(transformedBills);
-      setHasFetched(true);
     } catch (error) {
       console.error('Failed to fetch bills:', error);
+      billsPromise = null;
     } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchBills();
-  }, [hasFetched]);
+    if (!hasInitialized.current) {
+      hasInitialized.current = true;
+      fetchBills();
+    }
+  }, []);
 
   const addBill = async (data: CreateBillData): Promise<{ success: boolean; bill?: Bill; error?: string }> => {
     try {
@@ -83,8 +120,11 @@ export function useBills() {
       const res = await api.post('/bills', apiData);
       const newBill = transformApiBillToFrontend(res.data);
       
-      // Add to local state
+      // Add to local state and update cache
       setBills(prev => [newBill, ...prev]);
+      if (billsCache) {
+        billsCache = [newBill, ...billsCache];
+      }
       
       return { success: true, bill: newBill };
     } catch (error: any) {

@@ -14,8 +14,14 @@ const app = express();
 app.use(helmet());
 app.use(cors({ origin: process.env.CORS_ORIGIN?.split(',').map(s => s.trim()) || '*', credentials: true }));
 app.use(json({ limit: '1mb' }));
-// General rate limiting
-app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 300 }));
+// General rate limiting - more generous for development
+app.use(rateLimit({ 
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 1200, // Increased to 1200 for development
+  message: { error: 'Too many requests, please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+}));
 
 // Stricter rate limiting for auth routes
 const authLimiter = rateLimit({
@@ -26,7 +32,12 @@ const authLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-app.get('/health', (_req, res) => res.json({ ok: true }));
+app.get('/health', (_req, res) => res.json({ 
+  ok: true, 
+  timestamp: new Date().toISOString(),
+  uptime: process.uptime(),
+  environment: process.env.NODE_ENV || 'development'
+}));
 
 app.use('/auth', authLimiter, authRouter);
 app.use('/users', usersRouter);

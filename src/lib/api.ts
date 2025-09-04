@@ -2,6 +2,10 @@ import axios from 'axios';
 
 const baseURL = import.meta.env.VITE_API_BASE_URL as string | undefined;
 
+// Request throttling to prevent rapid-fire requests
+let lastRequestTime = 0;
+const MIN_REQUEST_INTERVAL = 100; // 100ms minimum between requests
+
 export const api = axios.create({
   baseURL: baseURL || '/api',
   withCredentials: false
@@ -11,7 +15,15 @@ function getAccessToken() {
   return localStorage.getItem('access_token') || '';
 }
 
-api.interceptors.request.use((config) => {
+api.interceptors.request.use(async (config) => {
+  // Throttle requests to prevent rapid-fire calls
+  const now = Date.now();
+  const timeSinceLastRequest = now - lastRequestTime;
+  if (timeSinceLastRequest < MIN_REQUEST_INTERVAL) {
+    await new Promise(resolve => setTimeout(resolve, MIN_REQUEST_INTERVAL - timeSinceLastRequest));
+  }
+  lastRequestTime = Date.now();
+
   const token = getAccessToken();
   if (token) {
     config.headers = config.headers || {};

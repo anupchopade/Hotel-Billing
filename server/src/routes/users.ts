@@ -9,8 +9,20 @@ const router = Router();
 router.use(requireAuth, requireAdmin);
 
 router.get('/', async (_req, res) => {
-  const users = await prisma.user.findMany({ select: { id: true, name: true, email: true, role: true, createdAt: true } });
+  const users = await prisma.user.findMany({ 
+    where: { isDeleted: false },
+    select: { id: true, name: true, email: true, role: true, createdAt: true, isDeleted: true } 
+  });
   res.json(users);
+});
+
+// Get deleted users for admin management
+router.get('/deleted', async (_req, res) => {
+  const deletedUsers = await prisma.user.findMany({ 
+    where: { isDeleted: true },
+    select: { id: true, name: true, email: true, role: true, createdAt: true, isDeleted: true } 
+  });
+  res.json(deletedUsers);
 });
 
 const createSchema = z.object({
@@ -25,7 +37,8 @@ router.post('/', async (req, res) => {
   if (!parsed.success) return res.status(400).json({ error: 'Invalid payload' });
   const { name, email, role, password } = parsed.data;
   const existing = await prisma.user.findUnique({ where: { email: email.toLowerCase() } });
-  if (existing) return res.status(409).json({ error: 'Email already exists' });
+  if (existing && !existing.isDeleted) return res.status(409).json({ error: 'Email already exists' });
+  if (existing && existing.isDeleted) return res.status(409).json({ error: 'Email belongs to a deleted user. Please reactivate the existing account instead.' });
   const passwordHash = await bcrypt.hash(password, 10);
   const user = await prisma.user.create({ data: { name, email: email.toLowerCase(), role, passwordHash } });
   res.status(201).json({ id: user.id, name: user.name, email: user.email, role: user.role });
@@ -66,11 +79,70 @@ router.patch('/:id/password', async (req, res) => {
 
 router.delete('/:id', async (req, res) => {
   const id = req.params.id;
+  
   try {
-    await prisma.user.delete({ where: { id } });
+    // First, check if the user exists
+    const userToDelete = await prisma.user.findUnique({ where: { id } });
+    if (!userToDelete) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Check if user is already deleted
+    if (userToDelete.isDeleted) {
+      return res.status(400).json({ error: 'User already deleted' });
+    }
+
+    // Note: No special restrictions needed for soft delete
+
+    // Soft delete: just set isDeleted = true
+    await prisma.user.update({
+      where: { id },
+      data: { isDeleted: true }
+    });
+
+    // Delete all refresh tokens for this user to prevent login
+    await prisma.refreshToken.deleteMany({
+      where: { userId: id }
+    });
+
     res.status(204).end();
-  } catch {
-    res.status(404).json({ error: 'User not found' });
+  } catch (error) {
+    console.error('Error deleting user:', error);
+    res.status(500).json({ error: 'Failed to delete user' });
+  }
+});
+
+// Reactivate a deleted user
+router.patch('/:id/reactivate', async (req, res) => {
+  const id = req.params.id;
+  
+  try {
+    // First, check if the user exists
+    const userToReactivate = await prisma.user.findUnique({ where: { id } });
+    if (!userToReactivate) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Check if user is already active
+    if (!userToReactivate.isDeleted) {
+      return res.status(400).json({ error: 'User is already active' });
+    }
+
+    // Reactivate: set isDeleted = false
+    const reactivatedUser = await prisma.user.update({
+      where: { id },
+      data: { isDeleted: false }
+    });
+
+    res.json({ 
+      id: reactivatedUser.id, 
+      name: reactivatedUser.name, 
+      email: reactivatedUser.email, 
+      role: reactivatedUser.role 
+    });
+  } catch (error) {
+    console.error('Error reactivating user:', error);
+    res.status(500).json({ error: 'Failed to reactivate user' });
   }
 });
 
