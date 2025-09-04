@@ -4,7 +4,7 @@ import { Plus, Minus, Trash2 } from 'lucide-react';
 
 interface BillItemCardProps {
   item: BillItem;
-  onQuantityChange: (itemId: string, quantity: number) => void;
+  onQuantityChange: (menuItemId: string, type: 'full' | 'half', quantity: number) => void;
 }
 
 export default function BillItemCard({ item, onQuantityChange }: BillItemCardProps) {
@@ -20,7 +20,7 @@ export default function BillItemCard({ item, onQuantityChange }: BillItemCardPro
       <div className="flex items-center space-x-3">
         <div className="flex items-center space-x-2">
           <button
-            onClick={() => onQuantityChange(item.id, item.quantity - 1)}
+            onClick={() => onQuantityChange(item.menuItemId, item.type, item.quantity - 1)}
             className="p-2 rounded-full bg-red-100 dark:bg-red-900/20 hover:bg-red-200 dark:hover:bg-red-900/30 text-red-700 dark:text-red-300 transition-colors"
           >
             {item.quantity === 1 ? <Trash2 className="h-4 w-4" /> : <Minus className="h-4 w-4" />}
@@ -31,7 +31,7 @@ export default function BillItemCard({ item, onQuantityChange }: BillItemCardPro
           </span>
           
           <button
-            onClick={() => onQuantityChange(item.id, item.quantity + 1)}
+            onClick={() => onQuantityChange(item.menuItemId, item.type, item.quantity + 1)}
             className="p-2 rounded-full bg-green-100 dark:bg-green-900/20 hover:bg-green-200 dark:hover:bg-green-900/30 text-green-700 dark:text-green-300 transition-colors"
           >
             <Plus className="h-4 w-4" />

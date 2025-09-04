@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useBills } from '../hooks/useBills';
@@ -10,14 +10,16 @@ import {
   TrendingUp, 
   IndianRupee,
   Clock,
-  Users as UsersIcon,
-  ChefHat
+  ChefHat,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 
 export default function Dashboard() {
   const { user } = useAuth();
   const { bills } = useBills();
   const { menuItems } = useMenuItems();
+  const [showFinancials, setShowFinancials] = useState(false);
 
   const todaysBills = bills.filter(bill => {
     const billDate = new Date(bill.createdAt).toDateString();
@@ -81,32 +83,8 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg">
-          <div className="flex items-center">
-            <div className="p-3 bg-blue-100 dark:bg-blue-900/20 rounded-full">
-              <IndianRupee className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Today's Revenue</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">₹{todaysRevenue.toLocaleString()}</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg">
-          <div className="flex items-center">
-            <div className="p-3 bg-green-100 dark:bg-green-900/20 rounded-full">
-              <TrendingUp className="h-6 w-6 text-green-600 dark:text-green-400" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Monthly Revenue</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">₹{monthlyRevenue.toLocaleString()}</p>
-            </div>
-          </div>
-        </div>
-
+      {/* General Stats - Always Visible */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg">
           <div className="flex items-center">
             <div className="p-3 bg-purple-100 dark:bg-purple-900/20 rounded-full">
@@ -122,7 +100,7 @@ export default function Dashboard() {
         <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg">
           <div className="flex items-center">
             <div className="p-3 bg-orange-100 dark:bg-orange-900/20 rounded-full">
-              <UsersIcon className="h-6 w-6 text-orange-600 dark:text-orange-400" />
+              <ChefHat className="h-6 w-6 text-orange-600 dark:text-orange-400" />
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Menu Items</p>
@@ -130,6 +108,68 @@ export default function Dashboard() {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Financial Details Section */}
+      <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center">
+            <IndianRupee className="h-5 w-5 mr-2" />
+            Financial Overview
+          </h2>
+          <button
+            onClick={() => setShowFinancials(!showFinancials)}
+            className="flex items-center px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-lg transition-colors"
+          >
+            {showFinancials ? (
+              <>
+                <EyeOff className="h-4 w-4 mr-2" />
+                Hide
+              </>
+            ) : (
+              <>
+                <Eye className="h-4 w-4 mr-2" />
+                Show
+              </>
+            )}
+          </button>
+        </div>
+
+        {showFinancials ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-6 border border-blue-200 dark:border-blue-800">
+              <div className="flex items-center">
+                <div className="p-3 bg-blue-100 dark:bg-blue-900/40 rounded-full">
+                  <IndianRupee className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-blue-700 dark:text-blue-300">Today's Revenue</p>
+                  <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">₹{todaysRevenue.toLocaleString()}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-green-50 dark:bg-green-900/20 rounded-xl p-6 border border-green-200 dark:border-green-800">
+              <div className="flex items-center">
+                <div className="p-3 bg-green-100 dark:bg-green-900/40 rounded-full">
+                  <TrendingUp className="h-6 w-6 text-green-600 dark:text-green-400" />
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-green-700 dark:text-green-300">Monthly Revenue</p>
+                  <p className="text-2xl font-bold text-green-900 dark:text-green-100">₹{monthlyRevenue.toLocaleString()}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="text-center py-8">
+            <div className="p-4 bg-gray-100 dark:bg-gray-700 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+              <EyeOff className="h-8 w-8 text-gray-400" />
+            </div>
+            <p className="text-gray-500 dark:text-gray-400">Financial details are hidden for privacy</p>
+            <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">Click "Show" to view revenue information</p>
+          </div>
+        )}
       </div>
 
       {/* Quick Actions */}

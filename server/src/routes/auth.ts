@@ -21,8 +21,8 @@ router.post('/login', async (req, res) => {
   const user = await prisma.user.findUnique({ where: { email: email.toLowerCase() } });
   if (!user) return res.status(401).json({ error: 'Invalid credentials' });
 
-  // Only admins can login as requested
-  if (user.role !== 'admin') return res.status(403).json({ error: 'Only admins can login' });
+  // Allow both admin and cashier to login
+  if (user.role !== 'admin' && user.role !== 'cashier') return res.status(403).json({ error: 'Invalid user role' });
 
   const ok = await bcrypt.compare(password, user.passwordHash);
   if (!ok) return res.status(401).json({ error: 'Invalid credentials' });

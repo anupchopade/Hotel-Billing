@@ -50,12 +50,11 @@ export default function PrintBill({ bill, onNewBill, onGoBack }: PrintBillProps)
           <div id="bill-content" className="max-w-sm mx-auto bg-white text-black font-mono text-xs leading-tight">
             {/* Header */}
             <div className="text-center border-b-2 border-dashed border-gray-400 pb-3 mb-3">
-              <h1 className="text-lg font-bold">HOTEL RESTAURANT</h1>
-              <p>Your Hotel Name Here</p>
-              <p>Address Line 1</p>
-              <p>Address Line 2, City - 123456</p>
-              <p>Phone: +91 98765 43210</p>
-              <p>Email: info@yourhotel.com</p>
+              <h1 className="text-lg font-bold">HOTEL ANUPRABHA</h1>
+              <p>Nagpur Road</p>
+              <p>Pusad - 445216</p>
+              <p>Phone: 1234567890</p>
+              <p>Email: acxml03@gmail.com</p>
               <p>GSTIN: 22AAAAA0000A1Z5</p>
             </div>
 

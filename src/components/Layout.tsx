@@ -40,12 +40,14 @@ export default function Layout({ children }: LayoutProps) {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
-      <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
+      <header className="fixed top-0 left-0 right-0 z-30 bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-3">
-              <Store className="h-8 w-8 text-blue-600 dark:text-blue-400" />
-              <h1 className="text-xl font-bold text-gray-900 dark:text-white">Hotel Billing</h1>
+            <div className="flex items-center space-x-3 min-w-0 flex-shrink-0">
+              <Store className="h-8 w-8 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+              <Link to="/create-bill" className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors whitespace-nowrap">
+                Hotel Anuprabha
+              </Link>
             </div>
             
             <div className="flex items-center space-x-4">
@@ -76,7 +78,7 @@ export default function Layout({ children }: LayoutProps) {
       </header>
 
       {/* Mobile Navigation */}
-      <nav className="lg:hidden bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+      <nav className="lg:hidden fixed top-16 left-0 right-0 z-20 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
         <div className="flex overflow-x-auto">
           {navigation.map((item) => {
             const Icon = item.icon;
@@ -101,7 +103,7 @@ export default function Layout({ children }: LayoutProps) {
 
       <div className="flex">
         {/* Desktop Sidebar */}
-        <aside className="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 lg:pt-16 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700">
+        <aside className="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 lg:pt-16 lg:top-0 z-20 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700">
           <nav className="flex-1 px-4 py-6 space-y-1">
             {navigation.map((item) => {
               const Icon = item.icon;
@@ -125,7 +127,7 @@ export default function Layout({ children }: LayoutProps) {
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 lg:ml-64 pt-4 lg:pt-0">
+        <main className="flex-1 lg:ml-64 pt-20 lg:pt-16">
           <div className="px-4 sm:px-6 lg:px-8 py-6">
             {children}
           </div>

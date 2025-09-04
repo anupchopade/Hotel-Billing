@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useBills } from '../hooks/useBills';
-import { History, Search, Calendar, User, FileText, Eye, Download } from 'lucide-react';
+import { History, Search, Calendar, FileText, Eye, Download } from 'lucide-react';
 import { Bill } from '../types';
 
 export default function BillHistory() {
@@ -8,6 +8,9 @@ export default function BillHistory() {
   const [searchTerm, setSearchTerm] = useState('');
   const [dateFilter, setDateFilter] = useState('');
   const [selectedBill, setSelectedBill] = useState<Bill | null>(null);
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [exportFromDate, setExportFromDate] = useState('');
+  const [exportToDate, setExportToDate] = useState('');
 
   const filteredBills = bills.filter(bill => {
     const matchesSearch = 
@@ -22,9 +25,43 @@ export default function BillHistory() {
 
   const escapeCsv = (val: string) => `"${val.replace(/"/g, '""')}"`;
 
-  const exportToCSV = () => {
+  const exportToCSV = (fromDate?: string, toDate?: string) => {
+    let billsToExport = bills;
+    
+    // Apply date range filter if provided
+    if (fromDate || toDate) {
+      billsToExport = bills.filter(bill => {
+        const billDate = new Date(bill.createdAt);
+        const billDateOnly = new Date(billDate.getFullYear(), billDate.getMonth(), billDate.getDate());
+        
+        let fromMatch = true;
+        let toMatch = true;
+        
+        if (fromDate) {
+          const fromDateOnly = new Date(fromDate);
+          fromMatch = billDateOnly >= fromDateOnly;
+        }
+        
+        if (toDate) {
+          const toDateOnly = new Date(toDate);
+          toMatch = billDateOnly <= toDateOnly;
+        }
+        
+        return fromMatch && toMatch;
+      });
+      
+      console.log('Filtered bills for export:', billsToExport.length);
+      if (billsToExport.length === 0) {
+        alert('No bills found in the selected date range.');
+        return;
+      }
+    } else {
+      // Use current filtered bills if no date range specified
+      billsToExport = filteredBills;
+    }
+
     const headers = ['Bill No', 'Date', 'Customer', 'Table', 'Items', 'Total', 'Cashier'];
-    const csvData = filteredBills.map(bill => {
+    const csvData = billsToExport.map(bill => {
       const itemsCell = bill.items
         .map(it => `${it.name} (${it.type}) x${it.quantity} @₹${it.price} = ₹${it.total}`)
         .join(' | ');
@@ -43,10 +80,31 @@ export default function BillHistory() {
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
+    const dateRange = fromDate && toDate ? `${fromDate}_to_${toDate}` : new Date().toISOString().split('T')[0];
     a.href = url;
-    a.download = `bills-export-${new Date().toISOString().split('T')[0]}.csv`;
+    a.download = `bills-export-${dateRange}.csv`;
     a.click();
     URL.revokeObjectURL(url);
+  };
+
+  const handleCustomExport = () => {
+    if (!exportFromDate || !exportToDate) {
+      alert('Please select both from and to dates');
+      return;
+    }
+    if (new Date(exportFromDate) > new Date(exportToDate)) {
+      alert('From date cannot be later than to date');
+      return;
+    }
+    
+    // Debug information
+    console.log('Exporting bills from', exportFromDate, 'to', exportToDate);
+    console.log('Total bills available:', bills.length);
+    
+    exportToCSV(exportFromDate, exportToDate);
+    setShowExportModal(false);
+    setExportFromDate('');
+    setExportToDate('');
   };
 
   if (selectedBill) {
@@ -107,13 +165,22 @@ export default function BillHistory() {
             <History className="h-6 w-6 mr-3" />
             Bill History
           </h1>
-          <button
-            onClick={exportToCSV}
-            className="flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-all"
-          >
-            <Download className="h-4 w-4 mr-2" />
-            Export
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => exportToCSV()}
+              className="flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-all"
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Export Current
+            </button>
+            <button
+              onClick={() => setShowExportModal(true)}
+              className="flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-all"
+            >
+              <Calendar className="h-4 w-4 mr-2" />
+              Custom Range
+            </button>
+          </div>
         </div>
 
         {/* Filters */}
@@ -180,6 +247,66 @@ export default function BillHistory() {
           </div>
         )}
       </div>
+
+      {/* Export Date Range Modal */}
+      {showExportModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 w-full max-w-md mx-4">
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
+              Export Bills - Custom Date Range
+            </h3>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  From Date
+                </label>
+                <input
+                  type="date"
+                  value={exportFromDate}
+                  onChange={(e) => setExportFromDate(e.target.value)}
+                  min="2019-01-01"
+                  max={new Date().toISOString().split('T')[0]}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  To Date
+                </label>
+                <input
+                  type="date"
+                  value={exportToDate}
+                  onChange={(e) => setExportToDate(e.target.value)}
+                  min="2019-01-01"
+                  max={new Date().toISOString().split('T')[0]}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                />
+              </div>
+            </div>
+            
+            <div className="flex justify-end space-x-3 mt-6">
+              <button
+                onClick={() => {
+                  setShowExportModal(false);
+                  setExportFromDate('');
+                  setExportToDate('');
+                }}
+                className="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white font-medium rounded-lg transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleCustomExport}
+                className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-all"
+              >
+                Export
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

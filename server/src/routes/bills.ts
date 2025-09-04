@@ -17,13 +17,34 @@ router.get('/', requireAuth, async (req, res) => {
   const bills = await prisma.bill.findMany({
     where,
     orderBy: { createdAt: 'desc' },
-    include: { items: true }
+    include: { 
+      items: true,
+      createdBy: {
+        select: {
+          id: true,
+          name: true,
+          email: true
+        }
+      }
+    }
   });
   res.json(bills);
 });
 
 router.get('/:id', requireAuth, async (req, res) => {
-  const bill = await prisma.bill.findUnique({ where: { id: req.params.id }, include: { items: true } });
+  const bill = await prisma.bill.findUnique({ 
+    where: { id: req.params.id }, 
+    include: { 
+      items: true,
+      createdBy: {
+        select: {
+          id: true,
+          name: true,
+          email: true
+        }
+      }
+    }
+  });
   if (!bill) return res.status(404).json({ error: 'Bill not found' });
   res.json(bill);
 });
@@ -88,7 +109,16 @@ router.post('/', requireAuth, async (req, res) => {
         }))
       }
     },
-    include: { items: true }
+    include: { 
+      items: true,
+      createdBy: {
+        select: {
+          id: true,
+          name: true,
+          email: true
+        }
+      }
+    }
   });
 
   res.status(201).json(created);

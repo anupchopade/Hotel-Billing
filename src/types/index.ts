@@ -2,9 +2,11 @@ export interface MenuItem {
   id: string;
   name: string;
   category: string;
-  fullPlatePrice: number;
-  halfPlatePrice: number;
+  fullPrice: number;
+  halfPrice: number;
   isAvailable: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface BillItem {
@@ -17,13 +19,37 @@ export interface BillItem {
   total: number;
 }
 
-export interface ApiUser {
+// API types that match backend structure
+export interface ApiBillItem {
   id: string;
-  name: string;
-  email: string;
-  role: 'admin' | 'cashier';
+  billId: string;
+  menuItemId: string;
+  nameSnapshot: string;
+  type: 'full' | 'half';
+  qty: number;
+  price: number;
+  total: number;
 }
 
+export interface ApiBill {
+  id: string;
+  billNo: string;
+  customer: string;
+  tableNumber: string;
+  subtotal: number;
+  cgst: number;
+  sgst: number;
+  discount: number;
+  total: number;
+  createdAt: string;
+  createdById: string;
+  createdBy: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  items: ApiBillItem[];
+}
 
 export interface Bill {
   id: string;

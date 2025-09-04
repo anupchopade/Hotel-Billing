@@ -42,9 +42,14 @@ api.interceptors.response.use(
           pending.forEach(r => r());
           pending = [];
         } catch (e) {
+          console.warn('Token refresh failed:', e);
           localStorage.removeItem('access_token');
           localStorage.removeItem('refresh_token');
-          window.location.href = '/login';
+          localStorage.removeItem('user');
+          // Only redirect if we're not already on the login page
+          if (!window.location.pathname.includes('/login')) {
+            window.location.href = '/login';
+          }
           throw e;
         } finally {
           isRefreshing = false;

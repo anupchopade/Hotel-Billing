@@ -1,118 +1,90 @@
 import { useState, useEffect } from 'react';
 import { MenuItem } from '../types';
+import { api } from '../lib/api';
 
 interface AddMenuItemData {
   name: string;
   category: string;
-  fullPlatePrice: number;
-  halfPlatePrice: number;
+  fullPrice: number;
+  halfPrice: number;
   isAvailable: boolean;
 }
 
 export function useMenuItems() {
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasFetched, setHasFetched] = useState(false);
+
+  const fetchMenuItems = async () => {
+    if (hasFetched) return; // Prevent duplicate calls
+    
+    try {
+      setIsLoading(true);
+      const res = await api.get('/menu');
+      setMenuItems(res.data);
+      setHasFetched(true);
+    } catch (error) {
+      console.error('Failed to fetch menu items:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const savedItems = localStorage.getItem('hotel-menu-items');
-    if (savedItems) {
-      setMenuItems(JSON.parse(savedItems));
-    } else {
-      // Initialize with demo menu items
-      const demoItems: MenuItem[] = [
-        {
-          id: '1',
-          name: 'Chicken Biryani',
-          category: 'biryani',
-          fullPlatePrice: 280,
-          halfPlatePrice: 150,
-          isAvailable: true
-        },
-        {
-          id: '2',
-          name: 'Mutton Biryani',
-          category: 'biryani',
-          fullPlatePrice: 350,
-          halfPlatePrice: 200,
-          isAvailable: true
-        },
-        {
-          id: '3',
-          name: 'Veg Biryani',
-          category: 'biryani',
-          fullPlatePrice: 220,
-          halfPlatePrice: 120,
-          isAvailable: true
-        },
-        {
-          id: '4',
-          name: 'Chicken Curry',
-          category: 'curry',
-          fullPlatePrice: 240,
-          halfPlatePrice: 130,
-          isAvailable: true
-        },
-        {
-          id: '5',
-          name: 'Dal Tadka',
-          category: 'dal',
-          fullPlatePrice: 180,
-          halfPlatePrice: 100,
-          isAvailable: true
-        },
-        {
-          id: '6',
-          name: 'Paneer Butter Masala',
-          category: 'curry',
-          fullPlatePrice: 260,
-          halfPlatePrice: 140,
-          isAvailable: true
-        },
-        {
-          id: '7',
-          name: 'Chicken 65',
-          category: 'starters',
-          fullPlatePrice: 320,
-          halfPlatePrice: 180,
-          isAvailable: true
-        },
-        {
-          id: '8',
-          name: 'Fish Fry',
-          category: 'starters',
-          fullPlatePrice: 280,
-          halfPlatePrice: 160,
-          isAvailable: true
-        }
-      ];
-      setMenuItems(demoItems);
-      localStorage.setItem('hotel-menu-items', JSON.stringify(demoItems));
+    fetchMenuItems();
+  }, [hasFetched]);
+
+  const refreshMenuItems = async () => {
+    try {
+      setIsLoading(true);
+      const res = await api.get('/menu');
+      setMenuItems(res.data);
+    } catch (error) {
+      console.error('Failed to refresh menu items:', error);
+    } finally {
+      setIsLoading(false);
     }
-  }, []);
-
-  const addMenuItem = (data: AddMenuItemData) => {
-    const newItem: MenuItem = {
-      id: Date.now().toString(),
-      ...data
-    };
-    
-    const updatedItems = [...menuItems, newItem];
-    setMenuItems(updatedItems);
-    localStorage.setItem('hotel-menu-items', JSON.stringify(updatedItems));
   };
 
-  const updateMenuItem = (id: string, data: AddMenuItemData) => {
-    const updatedItems = menuItems.map(item => 
-      item.id === id ? { ...item, ...data } : item
-    );
-    setMenuItems(updatedItems);
-    localStorage.setItem('hotel-menu-items', JSON.stringify(updatedItems));
+  const addMenuItem = async (data: AddMenuItemData): Promise<{ success: boolean; error?: string }> => {
+    try {
+      await api.post('/menu', data);
+      await refreshMenuItems(); // Refresh the menu items
+      return { success: true };
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.error || 'Failed to add menu item';
+      return { success: false, error: errorMessage };
+    }
   };
 
-  const deleteMenuItem = (id: string) => {
-    const updatedItems = menuItems.filter(item => item.id !== id);
-    setMenuItems(updatedItems);
-    localStorage.setItem('hotel-menu-items', JSON.stringify(updatedItems));
+  const updateMenuItem = async (id: string, data: AddMenuItemData): Promise<{ success: boolean; error?: string }> => {
+    try {
+      await api.patch(`/menu/${id}`, data);
+      await refreshMenuItems(); // Refresh the menu items
+      return { success: true };
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.error || 'Failed to update menu item';
+      return { success: false, error: errorMessage };
+    }
   };
 
-  return { menuItems, addMenuItem, updateMenuItem, deleteMenuItem };
+  const deleteMenuItem = async (id: string): Promise<{ success: boolean; error?: string }> => {
+    try {
+      await api.delete(`/menu/${id}`);
+      await refreshMenuItems(); // Refresh the menu items
+      return { success: true };
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.error || 'Failed to delete menu item';
+      return { success: false, error: errorMessage };
+    }
+  };
+
+  return { 
+    menuItems, 
+    addMenuItem, 
+    updateMenuItem, 
+    deleteMenuItem, 
+    isLoading,
+    fetchMenuItems 
+  };
 }

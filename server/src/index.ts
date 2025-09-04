@@ -14,11 +14,21 @@ const app = express();
 app.use(helmet());
 app.use(cors({ origin: process.env.CORS_ORIGIN?.split(',').map(s => s.trim()) || '*', credentials: true }));
 app.use(json({ limit: '1mb' }));
+// General rate limiting
 app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 300 }));
+
+// Stricter rate limiting for auth routes
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // Limit each IP to 5 login attempts per windowMs
+  message: { error: 'Too many login attempts, please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 app.get('/health', (_req, res) => res.json({ ok: true }));
 
-app.use('/auth', authRouter);
+app.use('/auth', authLimiter, authRouter);
 app.use('/users', usersRouter);
 app.use('/menu', menuRouter);
 app.use('/bills', billsRouter);

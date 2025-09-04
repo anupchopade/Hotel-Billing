@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { Users, UserPlus, Shield, Key, Mail, User, X, Edit2, Trash2, Save } from 'lucide-react';
+import { Users, UserPlus, Shield, Key, Mail, User, X, Edit2, Trash2, Save, Eye, EyeOff } from 'lucide-react';
 
 export default function UserManagement() {
   const { user, users, addUser, updateUser, deleteUser, changePassword } = useAuth();
@@ -20,6 +20,8 @@ export default function UserManagement() {
 
   const [pwChangeId, setPwChangeId] = useState<string | null>(null);
   const [pwNew, setPwNew] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
 
   if (user?.role !== 'admin') {
     return (
@@ -31,7 +33,7 @@ export default function UserManagement() {
     );
   }
 
-  const handleAddUser = (e: React.FormEvent) => {
+  const handleAddUser = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setSuccess('');
@@ -41,7 +43,7 @@ export default function UserManagement() {
       return;
     }
 
-    const result = addUser({ name: name.trim(), email: email.trim(), role, password });
+    const result = await addUser({ name: name.trim(), email: email.trim(), role, password });
     if (!result.success) {
       setError(result.error || 'Failed to add user');
       return;
@@ -53,6 +55,7 @@ export default function UserManagement() {
     setPassword('');
     setRole('cashier');
     setShowForm(false);
+    setTimeout(() => setSuccess(''), 3000);
   };
 
   const startEdit = (id: string, name: string, email: string, role: 'admin' | 'cashier') => {
@@ -62,9 +65,9 @@ export default function UserManagement() {
     setEditingRole(role);
   };
 
-  const handleEditSave = () => {
+  const handleEditSave = async () => {
     if (!editingId) return;
-    const res = updateUser(editingId, { name: editingName.trim(), email: editingEmail.trim(), role: editingRole });
+    const res = await updateUser(editingId, { name: editingName.trim(), email: editingEmail.trim(), role: editingRole });
     if (!res.success) {
       alert(res.error || 'Failed to update user');
       return;
@@ -72,19 +75,19 @@ export default function UserManagement() {
     setEditingId(null);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (confirm('Delete this user?')) {
-      const res = deleteUser(id);
+      const res = await deleteUser(id);
       if (!res.success) alert(res.error || 'Failed to delete user');
     }
   };
 
-  const handlePasswordChange = (id: string) => {
+  const handlePasswordChange = async (id: string) => {
     if (!pwNew.trim()) {
       alert('Enter new password');
       return;
     }
-    const res = changePassword(id, pwNew.trim());
+    const res = await changePassword(id, pwNew.trim());
     if (!res.success) alert(res.error || 'Failed to change password');
     setPwChangeId(null);
     setPwNew('');
@@ -130,7 +133,21 @@ export default function UserManagement() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Password</label>
-                <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white" />
+                <div className="relative">
+                  <input 
+                    type={showPassword ? "text" : "password"} 
+                    value={password} 
+                    onChange={(e) => setPassword(e.target.value)} 
+                    className="w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white" 
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
               </div>
               <div className="md:col-span-2 flex items-center gap-3">
                 <button type="submit" className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-all">Save User</button>
@@ -203,7 +220,22 @@ export default function UserManagement() {
 
               {pwChangeId === userItem.id && (
                 <div className="mt-3 flex items-center gap-2">
-                  <input type="password" className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white" placeholder="New password" value={pwNew} onChange={(e)=>setPwNew(e.target.value)} />
+                  <div className="relative flex-1">
+                    <input 
+                      type={showNewPassword ? "text" : "password"} 
+                      className="w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white" 
+                      placeholder="New password" 
+                      value={pwNew} 
+                      onChange={(e)=>setPwNew(e.target.value)} 
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowNewPassword(!showNewPassword)}
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                    >
+                      {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
                   <button onClick={()=>handlePasswordChange(userItem.id)} className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg">Update</button>
                   <button onClick={()=>setPwChangeId(null)} className="px-3 py-2 bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-100 rounded-lg">Cancel</button>
                 </div>

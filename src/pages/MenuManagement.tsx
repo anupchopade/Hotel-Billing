@@ -15,17 +15,20 @@ export default function MenuManagement() {
   const [formData, setFormData] = useState({
     name: '',
     category: '',
-    fullPlatePrice: '',
-    halfPlatePrice: '',
+    fullPrice: '',
+    halfPrice: '',
     isAvailable: true
   });
 
-  if (user?.role !== 'admin') {
+  const isAdmin = user?.role === 'admin';
+  const isCashier = user?.role === 'cashier';
+
+  if (!isAdmin && !isCashier) {
     return (
       <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg text-center">
         <Shield className="h-16 w-16 mx-auto mb-4 text-red-500" />
         <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Access Denied</h2>
-        <p className="text-gray-600 dark:text-gray-400">Only administrators can manage the menu.</p>
+        <p className="text-gray-600 dark:text-gray-400">Access restricted to hotel staff only.</p>
       </div>
     );
   }
@@ -42,18 +45,18 @@ export default function MenuManagement() {
     setFormData({
       name: '',
       category: '',
-      fullPlatePrice: '',
-      halfPlatePrice: '',
+      fullPrice: '',
+      halfPrice: '',
       isAvailable: true
     });
     setIsAddingItem(false);
     setEditingItem(null);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.name.trim() || !formData.category.trim() || !formData.fullPlatePrice || !formData.halfPlatePrice) {
+    if (!formData.name.trim() || !formData.category.trim() || !formData.fullPrice || !formData.halfPrice) {
       alert('Please fill all fields');
       return;
     }
@@ -61,26 +64,31 @@ export default function MenuManagement() {
     const itemData = {
       name: formData.name.trim(),
       category: formData.category.trim().toLowerCase(),
-      fullPlatePrice: parseFloat(formData.fullPlatePrice),
-      halfPlatePrice: parseFloat(formData.halfPlatePrice),
+      fullPrice: parseFloat(formData.fullPrice),
+      halfPrice: parseFloat(formData.halfPrice),
       isAvailable: formData.isAvailable
     };
 
+    let result;
     if (editingItem) {
-      updateMenuItem(editingItem.id, itemData);
+      result = await updateMenuItem(editingItem.id, itemData);
     } else {
-      addMenuItem(itemData);
+      result = await addMenuItem(itemData);
     }
     
-    resetForm();
+    if (result.success) {
+      resetForm();
+    } else {
+      alert(result.error || 'Operation failed');
+    }
   };
 
   const startEdit = (item: MenuItem) => {
     setFormData({
       name: item.name,
       category: item.category,
-      fullPlatePrice: item.fullPlatePrice.toString(),
-      halfPlatePrice: item.halfPlatePrice.toString(),
+      fullPrice: item.fullPrice.toString(),
+      halfPrice: item.halfPrice.toString(),
       isAvailable: item.isAvailable
     });
     setEditingItem(item);
@@ -93,19 +101,21 @@ export default function MenuManagement() {
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center">
             <Menu className="h-6 w-6 mr-3" />
-            Menu Management
+            {isCashier ? 'Menu Items' : 'Menu Management'}
           </h1>
-          <button
-            onClick={() => setIsAddingItem(true)}
-            className="flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-all"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Add Item
-          </button>
+          {isAdmin && (
+            <button
+              onClick={() => setIsAddingItem(true)}
+              className="flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-all"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add Item
+            </button>
+          )}
         </div>
 
-        {/* Add/Edit Form */}
-        {isAddingItem && (
+        {/* Add/Edit Form - Admin Only */}
+        {isAdmin && isAddingItem && (
           <div className="mb-6 p-6 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-700">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -152,8 +162,8 @@ export default function MenuManagement() {
                 </label>
                 <input
                   type="number"
-                  value={formData.fullPlatePrice}
-                  onChange={(e) => setFormData({ ...formData, fullPlatePrice: e.target.value })}
+                  value={formData.fullPrice}
+                  onChange={(e) => setFormData({ ...formData, fullPrice: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-600 dark:text-white"
                   placeholder="0"
                   min="0"
@@ -167,8 +177,8 @@ export default function MenuManagement() {
                 </label>
                 <input
                   type="number"
-                  value={formData.halfPlatePrice}
-                  onChange={(e) => setFormData({ ...formData, halfPlatePrice: e.target.value })}
+                  value={formData.halfPrice}
+                  onChange={(e) => setFormData({ ...formData, halfPrice: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-600 dark:text-white"
                   placeholder="0"
                   min="0"
@@ -253,35 +263,40 @@ export default function MenuManagement() {
                     <p className="text-sm text-gray-600 dark:text-gray-400 capitalize">{item.category}</p>
                   </div>
                   
-                  <div className="flex space-x-1">
-                    <button
-                      onClick={() => startEdit(item)}
-                      className="p-1 rounded bg-blue-100 dark:bg-blue-900/20 hover:bg-blue-200 dark:hover:bg-blue-900/30 text-blue-600 dark:text-blue-400 transition-colors"
-                    >
-                      <Edit className="h-4 w-4" />
-                    </button>
-                    
-                    <button
-                      onClick={() => {
-                        if (confirm('Are you sure you want to delete this item?')) {
-                          deleteMenuItem(item.id);
-                        }
-                      }}
-                      className="p-1 rounded bg-red-100 dark:bg-red-900/20 hover:bg-red-200 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 transition-colors"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </div>
+                  {isAdmin && (
+                    <div className="flex space-x-1">
+                      <button
+                        onClick={() => startEdit(item)}
+                        className="p-1 rounded bg-blue-100 dark:bg-blue-900/20 hover:bg-blue-200 dark:hover:bg-blue-900/30 text-blue-600 dark:text-blue-400 transition-colors"
+                      >
+                        <Edit className="h-4 w-4" />
+                      </button>
+                      
+                      <button
+                        onClick={async () => {
+                          if (confirm('Are you sure you want to delete this item?')) {
+                            const result = await deleteMenuItem(item.id);
+                            if (!result.success) {
+                              alert(result.error || 'Failed to delete item');
+                            }
+                          }
+                        }}
+                        className="p-1 rounded bg-red-100 dark:bg-red-900/20 hover:bg-red-200 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 transition-colors"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  )}
                 </div>
                 
                 <div className="space-y-1 text-sm">
                   <div className="flex justify-between">
                     <span className="text-gray-600 dark:text-gray-400">Full Plate:</span>
-                    <span className="font-medium text-gray-900 dark:text-white">₹{item.fullPlatePrice}</span>
+                    <span className="font-medium text-gray-900 dark:text-white">₹{item.fullPrice}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600 dark:text-gray-400">Half Plate:</span>
-                    <span className="font-medium text-gray-900 dark:text-white">₹{item.halfPlatePrice}</span>
+                    <span className="font-medium text-gray-900 dark:text-white">₹{item.halfPrice}</span>
                   </div>
                 </div>
                 

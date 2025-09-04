@@ -8,6 +8,11 @@
     display: none !important;
   }
   
+  /* Hide navigation and headers when printing */
+  header, nav, .navigation {
+    display: none !important;
+  }
+  
   body {
     background: white !important;
     color: black !important;
