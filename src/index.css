@@ -27,32 +27,84 @@ html, body {
   }
 }
 
-/* Print Styles */
+/* Print Styles - Optimized for Thermal Printers */
 @media print {
-  .no-print {
-    display: none !important;
+  /* Hide everything except bill content */
+  * {
+    visibility: hidden !important;
   }
   
-  /* Hide navigation and headers when printing */
-  header, nav, .navigation {
-    display: none !important;
-  }
-  
-  body {
-    background: white !important;
-    color: black !important;
+  #bill-content, #bill-content * {
+    visibility: visible !important;
   }
   
   #bill-content {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 58mm !important;
     max-width: 58mm !important;
-    font-size: 10px !important;
-    line-height: 1.2 !important;
+    font-size: 8px !important;
+    line-height: 1.0 !important;
     margin: 0 !important;
+    padding: 1mm !important;
+    background: white !important;
+    color: black !important;
+    font-family: monospace !important;
+    height: auto !important;
+    max-height: none !important;
   }
   
   @page {
-    margin: 5mm;
-    size: 58mm auto;
+    margin: 0 !important;
+    size: 58mm auto !important;
+  }
+  
+  @page :first {
+    margin: 0 !important;
+    size: 58mm auto !important;
+  }
+  
+  @page :left {
+    margin: 0 !important;
+    size: 58mm auto !important;
+  }
+  
+  @page :right {
+    margin: 0 !important;
+    size: 58mm auto !important;
+  }
+  
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: white !important;
+    height: auto !important;
+    max-height: none !important;
+  }
+  
+  html {
+    height: auto !important;
+    max-height: none !important;
+  }
+  
+  /* Prevent empty pages */
+  body::after {
+    display: none !important;
+  }
+  
+  /* Force single page - prevent any second page */
+  * {
+    page-break-after: avoid !important;
+    page-break-before: avoid !important;
+    page-break-inside: avoid !important;
+  }
+  
+  /* Ensure no content flows to second page */
+  #bill-content {
+    page-break-after: avoid !important;
+    page-break-before: avoid !important;
+    page-break-inside: avoid !important;
   }
 }
 

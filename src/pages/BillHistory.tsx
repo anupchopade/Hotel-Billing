@@ -35,6 +35,10 @@ export default function BillHistory() {
     // Small delay to ensure the print modal is rendered
     setTimeout(() => {
       window.print();
+      // Clean up after printing
+      setTimeout(() => {
+        setBillToPrint(null);
+      }, 500);
     }, 100);
   };
 
@@ -395,9 +399,8 @@ export default function BillHistory() {
 
       {/* Print Modal - Hidden but rendered for printing */}
       {billToPrint && (
-        <div className="hidden print:block print:fixed print:inset-0 print:bg-white print:z-50">
-          <div className="p-8">
-            <div id="bill-content" className="max-w-sm mx-auto bg-white text-black font-mono text-xs leading-tight">
+        <div className="hidden print:block">
+          <div id="bill-content" className="bg-white text-black font-mono text-xs leading-tight">
               {/* Header */}
               <div className="text-center border-b-2 border-dashed border-gray-400 pb-3 mb-3">
                 <h1 className="text-lg font-bold">HOTEL ANUPRABHA</h1>
@@ -491,8 +494,7 @@ export default function BillHistory() {
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
     </div>
   );
 }

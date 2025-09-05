@@ -46,7 +46,7 @@ export default function PrintBill({ bill, onNewBill, onGoBack }: PrintBillProps)
 
       {/* Print Preview */}
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden">
-        <div className="p-8">
+        <div className="p-8 print:p-0">
           <div id="bill-content" className="max-w-sm mx-auto bg-white text-black font-mono text-xs leading-tight">
             {/* Header */}
             <div className="text-center border-b-2 border-dashed border-gray-400 pb-3 mb-3">
