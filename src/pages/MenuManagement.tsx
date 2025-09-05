@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useMenuItems } from '../hooks/useMenuItems';
 import { MenuItem } from '../types';
 import { Menu, Plus, Edit, Trash2, Search, Save, X, Shield } from 'lucide-react';
@@ -22,6 +22,25 @@ export default function MenuManagement() {
 
   const isAdmin = user?.role === 'admin';
   const isCashier = user?.role === 'cashier';
+
+  // Handle escape key and click outside to close modal
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isAddingItem) {
+        resetForm();
+      }
+    };
+
+    if (isAddingItem) {
+      document.addEventListener('keydown', handleEscape);
+      document.body.style.overflow = 'hidden'; // Prevent background scrolling
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+      document.body.style.overflow = 'unset';
+    };
+  }, [isAddingItem]);
 
   if (!isAdmin && !isCashier) {
     return (
@@ -114,98 +133,19 @@ export default function MenuManagement() {
           )}
         </div>
 
-        {/* Add/Edit Form - Admin Only */}
-        {isAdmin && isAddingItem && (
-          <div className="mb-4 sm:mb-6 p-4 sm:p-6 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-700">
-            <div className="flex items-center justify-between mb-3 sm:mb-4">
-              <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
-                {editingItem ? 'Edit Menu Item' : 'Add New Menu Item'}
-              </h3>
-              <button
-                onClick={resetForm}
-                className="p-1.5 sm:p-2 rounded-lg bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors"
-              >
-                <X className="h-3 w-3 sm:h-4 sm:w-4" />
-              </button>
-            </div>
-            
-            <form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Item Name *
-                </label>
-                <input
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-600 dark:text-white text-sm sm:text-base"
-                  placeholder="e.g. Chicken Biryani"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Category *
-                </label>
-                <input
-                  type="text"
-                  value={formData.category}
-                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-600 dark:text-white text-sm sm:text-base"
-                  placeholder="e.g. biryani, starters"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Full Plate Price *
-                </label>
-                <input
-                  type="number"
-                  value={formData.fullPrice}
-                  onChange={(e) => setFormData({ ...formData, fullPrice: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-600 dark:text-white text-sm sm:text-base"
-                  placeholder="0"
-                  min="0"
-                  step="0.01"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Half Plate Price *
-                </label>
-                <input
-                  type="number"
-                  value={formData.halfPrice}
-                  onChange={(e) => setFormData({ ...formData, halfPrice: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-600 dark:text-white text-sm sm:text-base"
-                  placeholder="0"
-                  min="0"
-                  step="0.01"
-                />
-              </div>
-              
-              <div className="md:col-span-2 flex items-center justify-between">
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={formData.isAvailable}
-                    onChange={(e) => setFormData({ ...formData, isAvailable: e.target.checked })}
-                    className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600"
-                  />
-                  <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Available for order</span>
-                </label>
-                
-                <button
-                  type="submit"
-                  className="flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-all"
-                >
-                  <Save className="h-4 w-4 mr-2" />
-                  {editingItem ? 'Update' : 'Add'} Item
-                </button>
-              </div>
-            </form>
+        {/* Add New Item Button - Admin Only */}
+        {isAdmin && !isAddingItem && (
+          <div className="mb-4 sm:mb-6">
+            <button
+              onClick={() => {
+                resetForm();
+                setIsAddingItem(true);
+              }}
+              className="flex items-center justify-center px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-all w-full sm:w-auto"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add New Menu Item
+            </button>
           </div>
         )}
 
@@ -310,6 +250,123 @@ export default function MenuManagement() {
           </div>
         )}
       </div>
+
+      {/* Edit/Add Modal */}
+      {isAdmin && isAddingItem && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              resetForm();
+            }
+          }}
+        >
+          <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl p-4 sm:p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div className="flex items-center justify-between mb-4 sm:mb-6">
+              <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">
+                {editingItem ? 'Edit Menu Item' : 'Add New Menu Item'}
+              </h3>
+              <button
+                onClick={resetForm}
+                className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                aria-label="Close modal"
+              >
+                <X className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+              </button>
+            </div>
+            
+            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Item Name *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white text-sm sm:text-base"
+                    placeholder="e.g. Chicken Biryani"
+                    autoFocus
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Category *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.category}
+                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                    className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white text-sm sm:text-base"
+                    placeholder="e.g. biryani, starters"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Full Plate Price *
+                  </label>
+                  <input
+                    type="number"
+                    value={formData.fullPrice}
+                    onChange={(e) => setFormData({ ...formData, fullPrice: e.target.value })}
+                    className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white text-sm sm:text-base"
+                    placeholder="0"
+                    min="0"
+                    step="0.01"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Half Plate Price *
+                  </label>
+                  <input
+                    type="number"
+                    value={formData.halfPrice}
+                    onChange={(e) => setFormData({ ...formData, halfPrice: e.target.value })}
+                    className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white text-sm sm:text-base"
+                    placeholder="0"
+                    min="0"
+                    step="0.01"
+                  />
+                </div>
+              </div>
+              
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-6 pt-2">
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={formData.isAvailable}
+                    onChange={(e) => setFormData({ ...formData, isAvailable: e.target.checked })}
+                    className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600"
+                  />
+                  <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Available for order</span>
+                </label>
+                
+                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                  <button
+                    type="button"
+                    onClick={resetForm}
+                    className="flex items-center justify-center px-4 py-2.5 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 font-medium rounded-lg transition-all text-sm sm:text-base"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex items-center justify-center px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-all text-sm sm:text-base"
+                  >
+                    <Save className="h-4 w-4 mr-2" />
+                    {editingItem ? 'Update' : 'Add'} Item
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

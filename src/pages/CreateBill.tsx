@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useBills } from '../hooks/useBills';
 import { useMenuItems } from '../hooks/useMenuItems';
 import { BillItem } from '../types';
@@ -6,7 +6,7 @@ import BillItemCard from '../components/BillItemCard';
 import MenuItemSelector from '../components/MenuItemSelector';
 import BillSummary from '../components/BillSummary';
 import PrintBill from '../components/PrintBill';
-import { ShoppingCart, Printer, Save, FileText, CheckCircle2 } from 'lucide-react';
+import { ShoppingCart, Printer, Save, FileText, CheckCircle2, X, Trash2, Plus, Minus } from 'lucide-react';
 
 export default function CreateBill() {
   const { addBill } = useBills();
@@ -19,6 +19,26 @@ export default function CreateBill() {
   const [showPrint, setShowPrint] = useState(false);
   const [currentBill, setCurrentBill] = useState<any>(null);
   const [lastAdded, setLastAdded] = useState<string | null>(null);
+  const [showCartModal, setShowCartModal] = useState(false);
+
+  // Handle escape key and click outside to close cart modal
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && showCartModal) {
+        setShowCartModal(false);
+      }
+    };
+
+    if (showCartModal) {
+      document.addEventListener('keydown', handleEscape);
+      document.body.style.overflow = 'hidden'; // Prevent background scrolling
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+      document.body.style.overflow = 'unset';
+    };
+  }, [showCartModal]);
 
   const showToast = (message: string) => {
     const container = document.getElementById('toast-container');
@@ -199,42 +219,14 @@ export default function CreateBill() {
           </div>
           
           {/* Bigger View/Edit Button */}
-          <details className="mb-3">
-            <summary className="flex items-center justify-center w-full py-2 px-3 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg cursor-pointer transition-colors">
-              <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
-                👁️ View/Edit Items ({billItems.length})
-              </span>
-            </summary>
-            <div className="mt-2 space-y-1 max-h-[120px] overflow-auto">
-              {billItems.map((item) => (
-                <div key={`${item.menuItemId}-${item.type}`} className="flex items-center justify-between bg-gray-50 dark:bg-gray-700 rounded p-1.5">
-                  <div className="flex-1 min-w-0">
-                    <div className="text-xs font-medium text-gray-900 dark:text-white truncate">
-                      {item.name} ({item.type[0].toUpperCase()})
-                    </div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400">
-                      ₹{item.price} × {item.quantity}
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-1 ml-1">
-                    <button
-                      onClick={() => updateItemQuantity(item.menuItemId, item.type, Math.max(1, item.quantity - 1))}
-                      className="w-5 h-5 rounded-full bg-red-100 hover:bg-red-200 dark:bg-red-900/30 text-red-600 dark:text-red-400 flex items-center justify-center text-xs"
-                    >
-                      -
-                    </button>
-                    <span className="text-xs font-medium w-4 text-center">{item.quantity}</span>
-                    <button
-                      onClick={() => updateItemQuantity(item.menuItemId, item.type, item.quantity + 1)}
-                      className="w-5 h-5 rounded-full bg-green-100 hover:bg-green-200 dark:bg-green-900/30 text-green-600 dark:text-green-400 flex items-center justify-center text-xs"
-                    >
-                      +
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </details>
+          <button
+            onClick={() => setShowCartModal(true)}
+            className="flex items-center justify-center w-full py-3 px-4 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg transition-colors mb-3"
+          >
+            <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
+              👁️ View/Edit Items ({billItems.length})
+            </span>
+          </button>
 
           {/* Action buttons - Always Visible */}
           <div className="flex gap-2">
@@ -330,6 +322,133 @@ export default function CreateBill() {
           )}
         </div>
       </div>
+
+      {/* Cart Edit Modal */}
+      {showCartModal && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowCartModal(false);
+            }
+          }}
+        >
+          <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl p-4 sm:p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div className="flex items-center justify-between mb-4 sm:mb-6">
+              <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white flex items-center">
+                <ShoppingCart className="h-5 w-5 mr-2" />
+                Edit Cart Items ({billItems.length})
+              </h3>
+              <button
+                onClick={() => setShowCartModal(false)}
+                className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                aria-label="Close modal"
+              >
+                <X className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+              </button>
+            </div>
+            
+            {billItems.length === 0 ? (
+              <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                <ShoppingCart className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                <p className="text-base">No items in cart</p>
+                <p className="text-sm">Add items from the menu to get started</p>
+              </div>
+            ) : (
+              <div className="space-y-3 sm:space-y-4">
+                                 {billItems.map((item) => (
+                   <div key={`${item.menuItemId}-${item.type}`} className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-700">
+                     <div className="flex-1 min-w-0">
+                       <h4 className="font-medium text-gray-900 dark:text-white truncate mb-1">
+                         {item.name}
+                       </h4>
+                       <p className="text-sm text-gray-600 dark:text-gray-400">
+                         {item.type === 'full' ? 'Full Plate' : 'Half Plate'} - ₹{item.price}
+                       </p>
+                       <p className="text-sm font-medium text-gray-900 dark:text-white">
+                         Total: ₹{item.total}
+                       </p>
+                     </div>
+                     
+                     <div className="flex items-center space-x-2">
+                       <button
+                         onClick={() => updateItemQuantity(item.menuItemId, item.type, item.quantity - 1)}
+                         className="p-2 rounded-full bg-red-100 dark:bg-red-900/20 hover:bg-red-200 dark:hover:bg-red-900/30 text-red-700 dark:text-red-300 transition-colors"
+                         title={item.quantity === 1 ? "Remove item" : "Decrease quantity"}
+                       >
+                         {item.quantity === 1 ? <Trash2 className="h-4 w-4" /> : <Minus className="h-4 w-4" />}
+                       </button>
+                       
+                       <span className="w-8 text-center font-medium text-gray-900 dark:text-white">
+                         {item.quantity}
+                       </span>
+                       
+                       <button
+                         onClick={() => updateItemQuantity(item.menuItemId, item.type, item.quantity + 1)}
+                         className="p-2 rounded-full bg-green-100 dark:bg-green-900/20 hover:bg-green-200 dark:hover:bg-green-900/30 text-green-700 dark:text-green-300 transition-colors"
+                         title="Increase quantity"
+                       >
+                         <Plus className="h-4 w-4" />
+                       </button>
+                     </div>
+                   </div>
+                 ))}
+                
+                {/* Cart Summary in Modal */}
+                <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-gray-700 dark:text-gray-300">Subtotal:</span>
+                    <span className="font-medium text-gray-900 dark:text-white">₹{subtotal.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-gray-700 dark:text-gray-300">GST (18%):</span>
+                    <span className="font-medium text-gray-900 dark:text-white">₹{gstAmount.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-base font-semibold border-t border-blue-200 dark:border-blue-700 pt-2 mt-2">
+                    <span className="text-gray-900 dark:text-white">Total:</span>
+                    <span className="text-blue-600 dark:text-blue-400">₹{total.toFixed(2)}</span>
+                  </div>
+                </div>
+                
+                {/* Action Buttons in Modal */}
+                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-6">
+                  <button
+                    onClick={() => setShowCartModal(false)}
+                    className="flex-1 flex items-center justify-center px-4 py-2.5 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 font-medium rounded-lg transition-all text-sm sm:text-base"
+                  >
+                    Close
+                  </button>
+                  <button
+                    onClick={async () => {
+                      setShowCartModal(false);
+                      await handleSaveBill();
+                    }}
+                    className="flex-1 flex items-center justify-center px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-all text-sm sm:text-base"
+                  >
+                    <Save className="h-4 w-4 mr-2" />
+                    Save Bill
+                  </button>
+                  <button
+                    onClick={async () => {
+                      setShowCartModal(false);
+                      if (!currentBill) {
+                        await handleSaveBill();
+                      } else {
+                        setShowPrint(true);
+                      }
+                    }}
+                    disabled={!customerName || !tableNumber || billItems.length === 0}
+                    className="flex-1 flex items-center justify-center px-4 py-2.5 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white font-medium rounded-lg transition-all text-sm sm:text-base"
+                  >
+                    <Printer className="h-4 w-4 mr-2" />
+                    Print & Save
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

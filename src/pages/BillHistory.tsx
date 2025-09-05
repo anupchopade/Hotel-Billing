@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useBills } from '../hooks/useBills';
-import { History, Search, Calendar, FileText, Eye, Download } from 'lucide-react';
+import { History, Search, Calendar, FileText, Eye, Download, Printer, X } from 'lucide-react';
 import { Bill } from '../types';
 
 export default function BillHistory() {
@@ -11,6 +11,32 @@ export default function BillHistory() {
   const [showExportModal, setShowExportModal] = useState(false);
   const [exportFromDate, setExportFromDate] = useState('');
   const [exportToDate, setExportToDate] = useState('');
+  const [billToPrint, setBillToPrint] = useState<Bill | null>(null);
+
+  // Handle escape key to go back from bill detail view
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && selectedBill) {
+        setSelectedBill(null);
+      }
+    };
+
+    if (selectedBill) {
+      document.addEventListener('keydown', handleEscape);
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [selectedBill]);
+
+  const handlePrintBill = (bill: Bill) => {
+    setBillToPrint(bill);
+    // Small delay to ensure the print modal is rendered
+    setTimeout(() => {
+      window.print();
+    }, 100);
+  };
 
   const filteredBills = bills.filter(bill => {
     const matchesSearch = 
@@ -142,9 +168,18 @@ export default function BillHistory() {
         </button>
         
         <div className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl p-4 sm:p-5 lg:p-6 shadow-sm border border-gray-200 dark:border-gray-700">
-          <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white mb-4 sm:mb-6">
-            Bill #{selectedBill.billNumber}
-          </h2>
+          <div className="flex items-center justify-between mb-4 sm:mb-6">
+            <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white">
+              Bill #{selectedBill.billNumber}
+            </h2>
+            <button
+              onClick={() => setSelectedBill(null)}
+              className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+              title="Close (Esc)"
+            >
+              <X className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+            </button>
+          </div>
           
           <div className="space-y-4 sm:space-y-6">
             <div>
@@ -277,7 +312,19 @@ export default function BillHistory() {
                   
                   <div className="flex items-center justify-between sm:flex-col sm:items-end gap-2">
                     <div className="font-bold text-base sm:text-lg text-gray-900 dark:text-white">₹{bill.total.toFixed(2)}</div>
-                    <Eye className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                    <div className="flex items-center gap-4">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handlePrintBill(bill);
+                        }}
+                        className="p-4 rounded-xl bg-green-100 dark:bg-green-900/20 hover:bg-green-200 dark:hover:bg-green-900/30 text-green-600 dark:text-green-400 transition-colors"
+                        title="Print Bill"
+                      >
+                        <Printer className="h-6 w-6" />
+                      </button>
+                      <Eye className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -341,6 +388,107 @@ export default function BillHistory() {
               >
                 Export
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Print Modal - Hidden but rendered for printing */}
+      {billToPrint && (
+        <div className="hidden print:block print:fixed print:inset-0 print:bg-white print:z-50">
+          <div className="p-8">
+            <div id="bill-content" className="max-w-sm mx-auto bg-white text-black font-mono text-xs leading-tight">
+              {/* Header */}
+              <div className="text-center border-b-2 border-dashed border-gray-400 pb-3 mb-3">
+                <h1 className="text-lg font-bold">HOTEL ANUPRABHA</h1>
+                <p>Nagpur Road</p>
+                <p>Pusad - 445216</p>
+                <p>Phone: 1234567890</p>
+                <p>Email: acxml03@gmail.com</p>
+                <p>GSTIN: 22AAAAA0000A1Z5</p>
+              </div>
+
+              {/* Bill Info */}
+              <div className="mb-3">
+                <div className="flex justify-between">
+                  <span>Bill No:</span>
+                  <span className="font-bold">{billToPrint.billNumber}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Date:</span>
+                  <span>{new Date(billToPrint.createdAt).toLocaleString('en-IN')}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Customer:</span>
+                  <span>{billToPrint.customerName}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Table:</span>
+                  <span>{billToPrint.tableNumber}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Cashier:</span>
+                  <span>{billToPrint.createdBy}</span>
+                </div>
+              </div>
+
+              <div className="border-b border-gray-400 mb-2"></div>
+
+              {/* Items */}
+              <div className="mb-3">
+                <div className="flex justify-between font-bold mb-1">
+                  <span>Item</span>
+                  <span>Qty Rate Total</span>
+                </div>
+                {billToPrint.items.map((item, index) => (
+                  <div key={index}>
+                    <div className="flex justify-between">
+                      <span className="flex-1">{item.name}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>({item.type === 'full' ? 'F' : 'H'})</span>
+                      <span>{item.quantity} x ₹{item.price} = ₹{item.total}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="border-b border-gray-400 mb-2"></div>
+
+              {/* Totals */}
+              <div className="space-y-1">
+                <div className="flex justify-between">
+                  <span>Subtotal:</span>
+                  <span>₹{billToPrint.subtotal.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>GST (18%):</span>
+                  <span>₹{billToPrint.gstAmount.toFixed(2)}</span>
+                </div>
+                {billToPrint.discount > 0 && (
+                  <div className="flex justify-between">
+                    <span>Discount:</span>
+                    <span>-₹{billToPrint.discount.toFixed(2)}</span>
+                  </div>
+                )}
+                <div className="border-t border-gray-400 pt-1">
+                  <div className="flex justify-between font-bold text-sm">
+                    <span>TOTAL:</span>
+                    <span>₹{billToPrint.total.toFixed(2)}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="border-b-2 border-dashed border-gray-400 my-3"></div>
+
+              {/* Footer */}
+              <div className="text-center">
+                <p className="mb-2">Thank you for dining with us!</p>
+                <p className="text-xs">Visit us again soon</p>
+                <div className="mt-2 flex items-center justify-center">
+                  <span className="text-xs">Verify: {billToPrint.id.slice(0, 8)}</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>

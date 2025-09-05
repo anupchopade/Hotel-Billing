@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
@@ -11,7 +11,9 @@ import {
   LogOut, 
   Sun, 
   Moon,
-  Store
+  Store,
+  X,
+  AlertTriangle
 } from 'lucide-react';
 
 interface LayoutProps {
@@ -23,11 +25,34 @@ export default function Layout({ children }: LayoutProps) {
   const { theme, toggleTheme } = useTheme();
   const location = useLocation();
   const navigate = useNavigate();
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   const handleLogout = () => {
     logout();
     navigate('/login');
   };
+
+  const confirmLogout = () => {
+    setShowLogoutConfirm(false);
+    handleLogout();
+  };
+
+  // Handle escape key to close logout confirmation modal
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && showLogoutConfirm) {
+        setShowLogoutConfirm(false);
+      }
+    };
+
+    if (showLogoutConfirm) {
+      document.addEventListener('keydown', handleEscape);
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [showLogoutConfirm]);
 
   const navigation = [
     { name: 'Dashboard', href: '/', icon: Home },
@@ -67,8 +92,9 @@ export default function Layout({ children }: LayoutProps) {
               </button>
               
               <button
-                onClick={handleLogout}
+                onClick={() => setShowLogoutConfirm(true)}
                 className="p-1.5 sm:p-2 rounded-lg bg-red-100 dark:bg-red-900/20 hover:bg-red-200 dark:hover:bg-red-900/30 transition-colors text-red-600 dark:text-red-400"
+                title="Logout"
               >
                 <LogOut className="h-4 w-4" />
               </button>
@@ -133,6 +159,58 @@ export default function Layout({ children }: LayoutProps) {
           </div>
         </main>
       </div>
+
+      {/* Logout Confirmation Modal */}
+      {showLogoutConfirm && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowLogoutConfirm(false);
+            }
+          }}
+        >
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-md shadow-2xl">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center">
+                <AlertTriangle className="h-6 w-6 text-orange-500 mr-3" />
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  Confirm Logout
+                </h3>
+              </div>
+              <button
+                onClick={() => setShowLogoutConfirm(false)}
+                className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                aria-label="Close modal"
+              >
+                <X className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+              </button>
+            </div>
+            
+            <div className="mb-6">
+              <p className="text-gray-600 dark:text-gray-300">
+                Are you sure you want to logout? You'll need to login again to access the system.
+              </p>
+            </div>
+            
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowLogoutConfirm(false)}
+                className="flex-1 px-4 py-2.5 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 font-medium rounded-lg transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmLogout}
+                className="flex-1 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-all flex items-center justify-center"
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
