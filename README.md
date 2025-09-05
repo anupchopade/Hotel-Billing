@@ -1,8 +1,8 @@
-# 🏨 Hotel Anuprabha - Billing System
+# 🏨 Hotel Billing System
 
-A modern, full-stack hotel billing system built with React, Node.js, and PostgreSQL. Designed specifically for Hotel Anuprabha with mobile-first responsive design, thermal printer support, and advanced user management features.
+A modern, full-stack hotel billing system built with React, Node.js, and PostgreSQL. Features mobile-first responsive design, thermal printer support, and advanced user management capabilities.
 
-![Hotel Anuprabha Logo](https://img.shields.io/badge/Hotel-Anuprabha-blue?style=for-the-badge)
+![Hotel Billing Logo](https://img.shields.io/badge/Hotel-Billing-blue?style=for-the-badge)
 ![Version](https://img.shields.io/badge/Version-2.0.0-green?style=for-the-badge)
 ![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)
 
@@ -28,7 +28,7 @@ A modern, full-stack hotel billing system built with React, Node.js, and Postgre
 ### 🧾 Billing Features
 - **Quick Bill Creation** with item selection
 - **Real-time Calculations** (GST, discounts, totals)
-- **Default Values** (Customer: "Shree", Table: "1")
+- **Default Values** (Customer: "Guest", Table: "1")
 - **Print Preview** with thermal printer optimization
 - **Bill History** with advanced search and filtering
 - **CSV Export** with custom date ranges and last 15 days option
@@ -151,6 +151,19 @@ npm run dev
 3. Click "Add User"
 4. Set role to "Cashier"
 
+### Example User Accounts
+```bash
+# Admin User
+Email: admin@hotel.com
+Password: admin123
+Role: Admin
+
+# Cashier User (created by admin)
+Email: cashier@hotel.com
+Password: cashier123
+Role: Cashier
+```
+
 ## 🖨️ Printer Setup
 
 ### Thermal Printer (Recommended)
@@ -245,6 +258,54 @@ npx prisma studio
 # Use Prisma Studio to create new admin user
 ```
 
+## 📋 Usage Examples
+
+### Creating a New Bill
+```bash
+1. Login as Admin or Cashier
+2. Navigate to "New Bill"
+3. Enter customer details (defaults: Customer="Guest", Table="1")
+4. Select items from menu
+5. Review cart summary
+6. Click "Print & Save" or "Save Bill"
+```
+
+### Managing Menu Items (Admin Only)
+```bash
+1. Login as Admin
+2. Go to "Menu" section
+3. Click "Add Item" to create new menu item
+4. Set Full/Half plate prices
+5. Mark availability status
+6. Save changes
+```
+
+### User Management (Admin Only)
+```bash
+1. Login as Admin
+2. Go to "Users" section
+3. Click "Add User" to create cashier account
+4. Set role as "Cashier"
+5. Use "Show Deleted" to manage deactivated users
+6. Click "Reactivate" to restore deleted users
+```
+
+### Exporting Bill History
+```bash
+1. Go to "History" section
+2. Use "Export Last 15 Days" for recent bills
+3. Use "Custom Date Range" for specific periods
+4. Download CSV file with bill details
+```
+
+### Printing Bills
+```bash
+1. From "New Bill": Click "Print & Save"
+2. From "History": Click green print button
+3. Select thermal printer (58mm recommended)
+4. Print single-page receipt
+```
+
 ## 📁 Project Structure
 
 ```
@@ -271,10 +332,10 @@ hotel-billing/
 ### Backend (.env)
 ```env
 # Database
-DATABASE_URL="postgresql://user:password@localhost:5432/hotel_billing"
+DATABASE_URL="postgresql://username:password@localhost:5432/hotel_billing"
 
 # JWT
-JWT_SECRET="your-super-secret-jwt-key"
+JWT_SECRET="your-super-secret-jwt-key-here"
 
 # Server
 PORT=8080
@@ -294,7 +355,22 @@ SEED_ADMIN_PASSWORD="admin123"
 VITE_API_BASE_URL="https://your-backend-url.onrender.com"
 
 # App Configuration
-VITE_APP_NAME="Hotel Anuprabha"
+VITE_APP_NAME="Hotel Billing System"
+VITE_DEFAULT_TAX_RATE="0.18"
+```
+
+### Example Environment Setup
+```bash
+# Backend Environment Variables
+DATABASE_URL="postgresql://postgres:password@localhost:5432/hotel_billing"
+JWT_SECRET="my-super-secret-jwt-key-12345"
+PORT=8080
+NODE_ENV=development
+CORS_ORIGIN="http://localhost:5173"
+
+# Frontend Environment Variables
+VITE_API_BASE_URL="http://localhost:8080"
+VITE_APP_NAME="Hotel Billing System"
 VITE_DEFAULT_TAX_RATE="0.18"
 ```
 
@@ -392,29 +468,65 @@ VITE_DEFAULT_TAX_RATE="0.18"
 
 ## 📞 Support
 
-### Hotel Anuprabha Contact
-- **Address**: Nagpur Road, Pusad - 445216
-- **Phone**: 1234567890
-- **Email**: acxml03@gmail.com
-
 ### Technical Support
 - **Issues**: Create GitHub issue
 - **Documentation**: Check README and docs/
 - **Updates**: Watch repository for releases
 
+### Example Hotel Information
+```bash
+# Hotel Details (Customize for your hotel)
+Hotel Name: Your Hotel Name
+Address: Your Hotel Address
+Phone: Your Phone Number
+Email: info@yourhotel.com
+GSTIN: Your GSTIN Number
+```
+
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
+## 🎨 Customization
+
+### Hotel Information
+Update the following files to customize for your hotel:
+
+```bash
+# Frontend - Hotel Details
+src/pages/BillHistory.tsx (print modal)
+src/components/PrintBill.tsx
+src/pages/Login.tsx (title)
+
+# Backend - Default Values
+src/pages/CreateBill.tsx (default customer/table)
+```
+
+### Example Customization
+```bash
+# Change Hotel Name
+Hotel Name: "Your Hotel Name"
+Address: "Your Hotel Address"
+Phone: "Your Phone Number"
+Email: "info@yourhotel.com"
+GSTIN: "Your GSTIN Number"
+
+# Change Default Values
+Default Customer: "Guest"
+Default Table: "1"
+Default Tax Rate: "0.18" (18%)
+```
+
 ## 🙏 Acknowledgments
 
-- **Hotel Anuprabha** for the opportunity
 - **React Team** for the amazing framework
 - **Tailwind CSS** for beautiful styling
 - **Prisma** for excellent database tooling
+- **Node.js** for robust backend development
+- **PostgreSQL** for reliable data storage
 
 ---
 
-**Made with ❤️ for Hotel Anuprabha**
+**Made with ❤️ for the hospitality industry**
 
 *Last Updated: January 2025 - Version 2.0*
